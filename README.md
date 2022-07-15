@@ -1,5 +1,8 @@
 # tair-go
 
+![build workflow](https://github.com/alibaba/tair-go/actions/workflows/go.yml/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alibaba/tair-go.svg)](https://pkg.go.dev/github.com/alibaba/tair-go)
+
 English | [简体中文](./README-CN.md)
 
 A client packaged based on [go-redis](https://github.com/go-redis/redis) that operates [Tair](https://www.alibabacloud.com/help/en/apsaradb-for-redis/latest/apsaradb-for-redis-enhanced-edition-overview) For Redis Modules.

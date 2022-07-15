@@ -1,5 +1,8 @@
 # tair-go
 
+![build workflow](https://github.com/alibaba/tair-go/actions/workflows/go.yml/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alibaba/tair-go.svg)](https://pkg.go.dev/github.com/alibaba/tair-go)
+
 English | [简体中文](./README-CN.md)
 
 基于 [go-redis](https://github.com/go-redis/redis) 封装，用于操作 [Tair Modules](https://help.aliyun.com/document_detail/145957.html) 的客户端。

@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"github.com/alibaba/tair-go/tair"
+	"github.com/go-redis/redis/v8"
 )
 
 var ctx = context.Background()
