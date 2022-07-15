@@ -1,0 +1,70 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  test-ubuntu-with-redis-7:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: clone and make redis
+        run: |
+          sudo apt-get install git
+          git clone https://github.com/redis/redis
+          cd redis
+          git checkout 7.0
+          make -j
+
+      - name: clone and make tairhash
+        run: |
+          git clone https://github.com/alibaba/TairHash.git
+          cd TairHash
+          mkdir build
+          cd build
+          cmake ../
+          make -j
+
+      - name: clone and make tairstring
+        run: |
+          git clone https://github.com/alibaba/TairString.git
+          cd TairString
+          mkdir build
+          cd build
+          cmake ../
+          make -j
+
+      - name: clone and make tairzset
+        run: |
+          git clone https://github.com/alibaba/TairZset.git
+          cd TairZset
+          mkdir build
+          cd build
+          cmake ../
+          make -j
+
+      - name: start redis with loadmodule
+        run: |
+          work_path=$(pwd)
+          tairhash_path=${work_path}/TairHash/lib/tairhash_module.so
+          tairstring_path=${work_path}/TairString/lib/tairstring_module.so
+          tairzset_path=${work_path}/TairZset/lib/tairzset_module.so
+          echo "loadmodule ${tairhash_path}" >> redis/redis.conf
+          echo "loadmodule ${tairstring_path}" >> redis/redis.conf
+          echo "loadmodule ${tairzset_path}" >> redis/redis.conf
+          ./redis/src/redis-server redis/redis.conf &
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
