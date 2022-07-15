@@ -11,18 +11,26 @@ A client packaged based on [go-redis](https://github.com/go-redis/redis) that op
 ## Installation
 
 ```
-go get github.com/alibaba/tair-go@v1.0.0
+go get github.com/alibaba/tair-go
 ```
 
 ## Quickstart
 An example of TairString is as follows:
 
+go.mod
+```
+require (
+	github.com/alibaba/tair-go v1.1.0
+)
+```
+
+test.go
 ```Go
 import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"tair-go/tair"
+	"github.com/alibaba/tair-go/tair"
 )
 
 var ctx = context.Background()

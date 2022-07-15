@@ -15,12 +15,21 @@ go get github.com/alibaba/tair-go@v1.0.0
 
 ## 快速开始
 一个 TairString 的示例如下所示:
+
+go.mod
+```
+require (
+	github.com/alibaba/tair-go v1.1.0
+)
+```
+
+test.go
 ```Go
 import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"tair-go/tair"
+	"github.com/alibaba/tair-go/tair"
 )
 
 var ctx = context.Background()
