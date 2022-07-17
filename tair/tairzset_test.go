@@ -3,9 +3,9 @@ package tair_test
 import (
 	"context"
 	"fmt"
+	"github.com/alibaba/tair-go/tair"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/alibaba/tair-go/tair"
 )
 
 var _ = Describe("tair zset commands", func() {
