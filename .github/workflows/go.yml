@@ -47,7 +47,7 @@ jobs:
           cmake ../
           make -j
 
-      - name: start redis with loadmodule
+      - name: start redis and redis cluster with loadmodule
         run: |
           work_path=$(pwd)
           tairhash_path=${work_path}/TairHash/lib/tairhash_module.so
@@ -57,6 +57,12 @@ jobs:
           echo "loadmodule ${tairstring_path}" >> redis/redis.conf
           echo "loadmodule ${tairzset_path}" >> redis/redis.conf
           ./redis/src/redis-server redis/redis.conf &
+
+          # start redis cluster
+          cd redis/utils/create-cluster
+          sed -i 's?ADDITIONAL_OPTIONS=""?ADDITIONAL_OPTIONS="--loadmodule ${tairhash_path} --loadmodule ${tairstring_path} --loadmodule ${tairzset_path}"?' create-cluster
+          ./create-cluster start
+          echo yes|./create-cluster create
 
       - name: Set up Go
         uses: actions/setup-go@v3
