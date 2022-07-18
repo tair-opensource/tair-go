@@ -86,7 +86,7 @@ var _ = Describe("TairClusterClient string", func() {
 
 		Eventually(func() string {
 			return client.Get(ctx, "foo").Val()
-		}, 30*time.Second).Should(Equal("VALUE"))
+		}, 30*time.Second).Should(Equal("bar"))
 
 		cnt, err := client.Del(ctx, "bar").Result()
 		Expect(err).NotTo(HaveOccurred())
