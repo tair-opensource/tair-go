@@ -2,7 +2,6 @@ package tair_test
 
 import (
 	"context"
-	"time"
 
 	"github.com/alibaba/tair-go/tair"
 	. "github.com/onsi/ginkgo"
