@@ -88,7 +88,7 @@ var _ = Describe("TairClusterClient string", func() {
 			return client.Get(ctx, "foo").Val()
 		}, 30*time.Second).Should(Equal("bar"))
 
-		cnt, err := client.Del(ctx, "bar").Result()
+		cnt, err := client.Del(ctx, "foo").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cnt).To(Equal(int64(1)))
 	})
