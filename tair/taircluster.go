@@ -2,6 +2,7 @@ package tair
 
 import (
 	"context"
+
 	"github.com/go-redis/redis/v8"
 )
 
@@ -16,7 +17,7 @@ type TairClusterOptions struct {
 }
 
 func (opt *TairClusterOptions) init() {
-	//init tair cluster options with necessary setup
+	// init tair cluster options with necessary setup
 }
 
 func NewTairClusterClient(opt *TairClusterOptions) *TairClusterClient {

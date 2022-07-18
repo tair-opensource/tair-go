@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
-	"reflect"
 )
 
 var ctx = context.Background()
@@ -17,16 +16,18 @@ var ip = "127.0.0.1"
 func init() {
 	clusterClient = tair.NewTairClusterClient(&tair.TairClusterOptions{
 		ClusterOptions: &redis.ClusterOptions{
-			Addrs: []string{"", ip + ":30001", ip + ":30002",
-				ip + ":30003", ip + ":30004", ip + ":30005", ip + ":30006"},
+			Addrs: []string{
+				"", ip + ":30001", ip + ":30002",
+				ip + ":30003", ip + ":30004", ip + ":30005", ip + ":30006",
+			},
 			// To route commands by latency or randomly, enable one of the following.
-			//RouteByLatency: true,
-			//RouteRandomly: true,
+			// RouteByLatency: true,
+			// RouteRandomly: true,
 		},
 	})
 }
 
-//ExampleTairClusterClient test tair module command  with TairClusterClient
+// ExampleTairClusterClient test tair module command  with TairClusterClient
 func ExampleTairClusterClient() {
 	setRes, err := clusterClient.ExSet(ctx, "key1", "value1").Result()
 	if err != nil {

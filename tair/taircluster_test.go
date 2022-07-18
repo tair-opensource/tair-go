@@ -2,12 +2,13 @@ package tair_test
 
 import (
 	"context"
+	"net"
+	"time"
+
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"net"
-	"time"
 )
 
 var (
@@ -66,7 +67,7 @@ func (s *clusterScenario) newClusterClient(
 }
 
 var _ = Describe("TairClusterClient string", func() {
-	//var failover bool
+	// var failover bool
 	var opt *redis.ClusterOptions
 	var client *tair.TairClusterClient
 
@@ -132,11 +133,10 @@ var _ = Describe("TairClusterClient string", func() {
 		Expect(res[1]).To(Equal(int64(88)))
 		Expect(res[2]).To(Equal(int64(99)))
 	})
-
 })
 
 var _ = Describe("TairClusterClient zset", func() {
-	//var failover bool
+	// var failover bool
 	var opt *redis.ClusterOptions
 	var client *tair.TairClusterClient
 
@@ -219,11 +219,10 @@ var _ = Describe("TairClusterClient zset", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(ss).To(Equal([]string{"b", "a"}))
 	})
-
 })
 
 var _ = Describe("TairClusterClient hash", func() {
-	//var failover bool
+	// var failover bool
 	var opt *redis.ClusterOptions
 	var client *tair.TairClusterClient
 
@@ -276,5 +275,4 @@ var _ = Describe("TairClusterClient hash", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(res).To(Equal(int64(1)))
 	})
-
 })

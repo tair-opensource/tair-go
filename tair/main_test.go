@@ -2,6 +2,10 @@ package tair_test
 
 import (
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
 	. "github.com/onsi/ginkgo"

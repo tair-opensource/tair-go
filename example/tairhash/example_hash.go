@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
 )
@@ -23,7 +24,6 @@ func init() {
 
 func ExampleTairHash() {
 	err := tairClient.ExHSet(ctx, "h-k-1", "f-1", "v-1").Err()
-
 	if err != nil {
 		fmt.Println(err.Error())
 		panic(err)
