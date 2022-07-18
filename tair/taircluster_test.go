@@ -13,7 +13,7 @@ import (
 var (
 	ctx      = context.Background()
 	rdb      *redis.Client
-	testHost = "192.168.220.137"
+	testHost = "127.0.0.1"
 )
 
 type clusterScenario struct {

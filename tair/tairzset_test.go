@@ -2,7 +2,6 @@ package tair_test
 
 import (
 	"context"
-	"fmt"
 	"github.com/alibaba/tair-go/tair"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,7 +21,6 @@ var _ = Describe("tair zset commands", func() {
 
 	Describe("tair zset", func() {
 		It("zset should Add", func() {
-			fmt.Println("tair zset test")
 			res, err := tairClient.ExZAdd(ctx, "k1", "90.1", "v1").Result()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).To(Equal(int64(1)))
@@ -149,7 +147,6 @@ var _ = Describe("tair zset commands", func() {
 			Expect(res).To(Equal(int64(3)))
 
 			ss, err := tairClient.ExZRangeWithScores(ctx, "foo", 0, 1).Result()
-			fmt.Println(ss)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ss).To(Equal([]string{"c", "0.10000000000000001", "a", "2"}))
 		})

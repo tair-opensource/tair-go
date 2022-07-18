@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  test-ubuntu-with-redis-7:
+  test-ubuntu-with-redis-62:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
           sudo apt-get install git
           git clone https://github.com/redis/redis
           cd redis
-          git checkout 7.0
+          git checkout 6.2.0
           make -j
 
       - name: clone and make tairhash
@@ -60,7 +60,9 @@ jobs:
 
           # start redis cluster
           cd redis/utils/create-cluster
-          sed -i 's?ADDITIONAL_OPTIONS=""?ADDITIONAL_OPTIONS="--loadmodule ${tairhash_path} --loadmodule ${tairstring_path} --loadmodule ${tairzset_path}"?' create-cluster
+          OPTIONS="--loadmodule ${tairhash_path} --loadmodule ${tairstring_path} --loadmodule ${tairzset_path}"
+          echo ADDITIONAL_OPTIONS="'${OPTIONS}'" > config.sh
+          cat config.sh
           ./create-cluster start
           echo yes|./create-cluster create
 
