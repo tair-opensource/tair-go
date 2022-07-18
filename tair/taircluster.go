@@ -17,13 +17,13 @@ type TairClusterOptions struct {
 }
 
 func (opt *TairClusterOptions) init() {
-	// init tair cluster options with necessary setup
 }
 
 func NewTairClusterClient(opt *TairClusterOptions) *TairClusterClient {
 	opt.init()
 	tc := &TairClusterClient{
 		ClusterClient: redis.NewClusterClient(opt.ClusterOptions),
+		ctx:           context.Background(),
 	}
 	tc.tairCmdable = tc.Process
 	return tc

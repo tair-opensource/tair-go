@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
+	"reflect"
 )
 
 var ctx = context.Background()
@@ -20,9 +21,6 @@ func init() {
 				"", ip + ":30001", ip + ":30002",
 				ip + ":30003", ip + ":30004", ip + ":30005", ip + ":30006",
 			},
-			// To route commands by latency or randomly, enable one of the following.
-			// RouteByLatency: true,
-			// RouteRandomly: true,
 		},
 	})
 }

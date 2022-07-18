@@ -8,8 +8,6 @@ import (
 	"github.com/alibaba/tair-go/tair"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"sort"
-	"time"
 )
 
 var _ = Describe("tair string commands", func() {

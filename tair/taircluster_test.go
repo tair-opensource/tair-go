@@ -13,7 +13,6 @@ import (
 
 var (
 	ctx      = context.Background()
-	rdb      *redis.Client
 	testHost = "127.0.0.1"
 )
 
@@ -47,16 +46,6 @@ func (s *clusterScenario) newClusterClient(
 		if opt.ClusterSlots != nil {
 			return nil
 		}
-
-		//state, err := client.LoadState(ctx)
-		//if err != nil {
-		//	return err
-		//}
-		//
-		//if !state.IsConsistent(ctx) {
-		//	return fmt.Errorf("cluster state is not consistent")
-		//}
-
 		return nil
 	}, 30*time.Second)
 	if err != nil {
@@ -89,17 +78,17 @@ var _ = Describe("TairClusterClient string", func() {
 	})
 
 	It("should GET/SET/DEL", func() {
-		err := client.Get(ctx, "A").Err()
+		err := client.Get(ctx, "foo").Err()
 		Expect(err).To(Equal(redis.Nil))
 
-		err = client.Set(ctx, "A", "VALUE", 0).Err()
+		err = client.Set(ctx, "foo", "bar", 0).Err()
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() string {
-			return client.Get(ctx, "A").Val()
+			return client.Get(ctx, "foo").Val()
 		}, 30*time.Second).Should(Equal("VALUE"))
 
-		cnt, err := client.Del(ctx, "A").Result()
+		cnt, err := client.Del(ctx, "bar").Result()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cnt).To(Equal(int64(1)))
 	})
