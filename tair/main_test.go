@@ -1,11 +1,14 @@
 package tair_test
 
 import (
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"os"
-	"testing"
 	"time"
 )
 
@@ -69,6 +72,68 @@ func redisOptions() *redis.Options {
 		PoolTimeout:        30 * time.Second,
 		IdleTimeout:        time.Minute,
 		IdleCheckFrequency: 100 * time.Millisecond,
+	}
+}
+
+func redisClusterOptions() *redis.ClusterOptions {
+	return &redis.ClusterOptions{
+		DialTimeout:  10 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+
+		MaxRedirects: 8,
+
+		PoolSize:           10,
+		PoolTimeout:        30 * time.Second,
+		IdleTimeout:        time.Minute,
+		IdleCheckFrequency: 100 * time.Millisecond,
+	}
+}
+
+var cluster = &clusterScenario{
+	ports:     []string{"30001", "30002", "30003", "30004", "30005", "30006"},
+	nodeIDs:   make([]string, 6),
+	processes: make(map[string]*redisProcess, 6),
+	clients:   make(map[string]*tair.TairClient, 6),
+}
+
+func eventually(fn func() error, timeout time.Duration) error {
+	errCh := make(chan error, 1)
+	done := make(chan struct{})
+	exit := make(chan struct{})
+
+	go func() {
+		for {
+			err := fn()
+			if err == nil {
+				close(done)
+				return
+			}
+
+			select {
+			case errCh <- err:
+			default:
+			}
+
+			select {
+			case <-exit:
+				return
+			case <-time.After(timeout / 100):
+			}
+		}
+	}()
+
+	select {
+	case <-done:
+		return nil
+	case <-time.After(timeout):
+		close(exit)
+		select {
+		case err := <-errCh:
+			return err
+		default:
+			return fmt.Errorf("timeout after %s without an error", timeout)
+		}
 	}
 }
 

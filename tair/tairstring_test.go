@@ -2,9 +2,10 @@ package tair_test
 
 import (
 	"context"
+
+	"github.com/alibaba/tair-go/tair"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/alibaba/tair-go/tair"
 	"time"
 )
 
@@ -141,7 +142,7 @@ var _ = Describe("tair string commands", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(Equal(int64(1)))
 		})
-		It("EXGAE", func() { // todo
+		It("EXGAE", func() {
 			a := tair.ExSetArgs{}.New()
 			a.Ex(10)
 			a.Flags(123)

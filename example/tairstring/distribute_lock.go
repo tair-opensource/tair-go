@@ -14,7 +14,7 @@ var ctx = context.Background()
 
 var tairClient *tair.TairClient
 
-var lock_key = "LOCK_KEY"
+var lockKey = "LOCK_KEY"
 
 func init() {
 	tairClient = tair.NewTairClient(&redis.Options{
@@ -60,7 +60,7 @@ func randomString(length int) string {
 
 func depositAndWithdraw(account *Account) {
 	var requestId = randomString(10)
-	if TryLock(lock_key, requestId, 2*time.Second) {
+	if TryLock(lockKey, requestId, 2*time.Second) {
 		fmt.Println("Balance:", account.Balance)
 		if account.Balance != 10 {
 			panic(fmt.Sprintf("Balance should not be negative value: %d", account.Balance))
@@ -68,7 +68,7 @@ func depositAndWithdraw(account *Account) {
 		account.Balance += 1000
 		time.Sleep(time.Second)
 		account.Balance -= 1000
-		ReleaseLock(lock_key, requestId)
+		ReleaseLock(lockKey, requestId)
 	}
 	time.Sleep(time.Second)
 }
