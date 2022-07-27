@@ -109,8 +109,8 @@ var _ = Describe("tair roaring commands", func() {
 		Expect(result3).To(Equal([]int64{0, 2, 4, 6, 8}))
 	})
 
-	It("TrScan", func() {
-		result1, err1 := tairClient.TrScanCount(ctx, "no-key", 0).Result()
+	It("TrScanCount", func() {
+		result1, err1 := tairClient.TrScan(ctx, "no-key", 0).Result()
 		Expect(err1).NotTo(HaveOccurred())
 		Expect(result1[0]).To(Equal(int64(0)))
 		Expect(result1[1]).To(Equal(make([]interface{}, 0)))
@@ -119,12 +119,12 @@ var _ = Describe("tair roaring commands", func() {
 		Expect(err2).NotTo(HaveOccurred())
 		Expect(result2).To(Equal(int64(5)))
 
-		result3, err3 := tairClient.TrScanCount(ctx, "foo", 0).Result()
+		result3, err3 := tairClient.TrScan(ctx, "foo", 0).Result()
 		Expect(err3).NotTo(HaveOccurred())
 		Expect(result3[0]).To(Equal(int64(0)))
 		Expect(result3[1]).To(Equal(append(make([]interface{}, 0), int64(1), int64(3), int64(5), int64(7), int64(9))))
 
-		result4, err4 := tairClient.TrScan(ctx, "foo", 4, 2).Result()
+		result4, err4 := tairClient.TrScanCount(ctx, "foo", 4, 2).Result()
 		Expect(err4).NotTo(HaveOccurred())
 		Expect(result4[0]).To(Equal(int64(9)))
 		Expect(result4[1]).To(Equal(append(make([]interface{}, 0), int64(5), int64(7))))
@@ -151,23 +151,23 @@ var _ = Describe("tair roaring commands", func() {
 		Expect(err5).NotTo(HaveOccurred())
 		Expect(result5).To(Equal(int64(1)))
 
-		result6, err6 := tairClient.TrBitPosFirst(ctx, "foo", 1).Result()
+		result6, err6 := tairClient.TrBitPos(ctx, "foo", 1).Result()
 		Expect(err6).NotTo(HaveOccurred())
 		Expect(result6).To(Equal(int64(1)))
 
-		result7, err7 := tairClient.TrBitPosFirst(ctx, "foo", 1).Result()
+		result7, err7 := tairClient.TrBitPos(ctx, "foo", 1).Result()
 		Expect(err7).NotTo(HaveOccurred())
 		Expect(result7).To(Equal(int64(1)))
 
-		result8, err8 := tairClient.TrBitPos(ctx, "foo", 1, 2).Result()
+		result8, err8 := tairClient.TrBitPosCount(ctx, "foo", 1, 2).Result()
 		Expect(err8).NotTo(HaveOccurred())
 		Expect(result8).To(Equal(int64(2)))
 
-		result9, err9 := tairClient.TrBitPos(ctx, "foo", 1, -4).Result()
+		result9, err9 := tairClient.TrBitPosCount(ctx, "foo", 1, -4).Result()
 		Expect(err9).NotTo(HaveOccurred())
 		Expect(result9).To(Equal(int64(6)))
 
-		result10, err10 := tairClient.TrBitPos(ctx, "foo", 0, 1).Result()
+		result10, err10 := tairClient.TrBitPosCount(ctx, "foo", 0, 1).Result()
 		Expect(err10).NotTo(HaveOccurred())
 		Expect(result10).To(Equal(int64(0)))
 

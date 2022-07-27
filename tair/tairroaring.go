@@ -174,7 +174,7 @@ func (tc tairCmdable) TrStat(ctx context.Context, key string, json bool) *redis.
 	_ = tc(ctx, cmd)
 	return cmd
 }
-func (tc tairCmdable) TrBitPos(ctx context.Context, key string, value int64, count int64) *redis.IntCmd {
+func (tc tairCmdable) TrBitPosCount(ctx context.Context, key string, value int64, count int64) *redis.IntCmd {
 	a := make([]interface{}, 4)
 	a[0] = "tr.bitpos"
 	a[1] = key
@@ -185,7 +185,7 @@ func (tc tairCmdable) TrBitPos(ctx context.Context, key string, value int64, cou
 	return cmd
 }
 
-func (tc tairCmdable) TrBitPosFirst(ctx context.Context, key string, value int64) *redis.IntCmd {
+func (tc tairCmdable) TrBitPos(ctx context.Context, key string, value int64) *redis.IntCmd {
 	a := make([]interface{}, 3)
 	a[0] = "tr.bitpos"
 	a[1] = key
@@ -230,7 +230,7 @@ func (tc tairCmdable) TrBitOpCard(ctx context.Context, operation string, keys ..
 	return cmd
 }
 
-func (tc tairCmdable) TrScan(ctx context.Context, key string, cursor int64, count int64) *redis.SliceCmd {
+func (tc tairCmdable) TrScanCount(ctx context.Context, key string, cursor int64, count int64) *redis.SliceCmd {
 	a := make([]interface{}, 5)
 	a[0] = "tr.scan"
 	a[1] = key
@@ -242,7 +242,7 @@ func (tc tairCmdable) TrScan(ctx context.Context, key string, cursor int64, coun
 	return cmd
 }
 
-func (tc tairCmdable) TrScanCount(ctx context.Context, key string, cursor int64) *redis.SliceCmd {
+func (tc tairCmdable) TrScan(ctx context.Context, key string, cursor int64) *redis.SliceCmd {
 	a := make([]interface{}, 3)
 	a[0] = "tr.scan"
 	a[1] = key
