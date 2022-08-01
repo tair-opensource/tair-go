@@ -1,9 +1,6 @@
 package tair_test
 
 import (
-	"github.com/alibaba/tair-go/tair"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"sort"
 	"testing"
 	"time"

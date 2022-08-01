@@ -2,8 +2,6 @@ package tair_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"net"
 	"testing"
 	"time"
