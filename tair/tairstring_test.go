@@ -1,159 +1,184 @@
 package tair_test
 
 import (
-	"context"
-
 	"github.com/alibaba/tair-go/tair"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"testing"
 	"time"
 )
 
-var _ = Describe("tair string commands", func() {
-	ctx := context.TODO()
-	var tairClient *tair.TairClient
-	BeforeEach(func() {
-		tairClient = tair.NewTairClient(redisOptions())
-		Expect(tairClient.FlushDB(ctx).Err()).NotTo(HaveOccurred())
-	})
+type TairStringTestSuite struct {
+	suite.Suite
+	tairClient *tair.TairClient
+}
 
-	AfterEach(func() {
-		Expect(tairClient.Close()).NotTo(HaveOccurred())
-	})
+func (suite *TairStringTestSuite) SetupTest() {
+	suite.tairClient = tair.NewTairClient(redisOptions())
+	assert.Equal(suite.T(), "OK", suite.tairClient.FlushDB(ctx).Val())
+}
 
-	Describe("tair string", func() {
-		It("Cas", func() {
-			tairClient.Set(ctx, "k1", "v1", 0)
-			n, err := tairClient.Cas(ctx, "k1", "v2", "v3").Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(n).To(Equal(int64(0)))
-			n, err = tairClient.Cas(ctx, "k1", "v1", "v3").Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(n).To(Equal(int64(1)))
-			res, err := tairClient.Get(ctx, "k1").Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(res).To(Equal("v3"))
-		})
-		It("Cas Args", func() {
-			tairClient.Set(ctx, "foo", "bzz", 0)
-			tairClient.CasArgs(ctx, "foo", "bzz", "too", tair.CasArgs{}.New().Ex(1))
-			result, err := tairClient.Get(ctx, "foo").Result()
-			Expect(result).To(Equal("too"))
-			Expect(err).NotTo(HaveOccurred())
-			time.Sleep(time.Duration(2) * time.Second)
-			result1, err1 := tairClient.Get(ctx, "foo").Result()
-			Expect(result1).To(Equal(""))
-			Expect(err1).To(HaveOccurred())
-		})
-		It("Cad", func() {
-			tairClient.Set(ctx, "foo", "bar", 0)
-			res, err := tairClient.Cad(ctx, "foo", "bzz").Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(res).To(Equal(int64(0)))
-			res1, err1 := tairClient.Cad(ctx, "foo", "bar").Result()
-			Expect(err1).NotTo(HaveOccurred())
-			Expect(res1).To(Equal(int64(1)))
-		})
-		It("ExSetArgs", func() {
-			result2, err2 := tairClient.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Xx()).Result()
-			Expect(err2).To(HaveOccurred())
-			Expect(result2).To(Equal(""))
-			result3, err3 := tairClient.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Nx()).Result()
-			Expect(err3).NotTo(HaveOccurred())
-			Expect(result3).To(Equal("OK"))
-		})
-		It("ExGet", func() {
-			result2, err2 := tairClient.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Abs(100)).Result()
-			Expect(err2).NotTo(HaveOccurred())
-			Expect(result2).To(Equal("OK"))
-			result4, err4 := tairClient.ExGet(ctx, "foo").Result()
-			Expect(err4).NotTo(HaveOccurred())
-			Expect(result4[0]).To(Equal("bar"))
-			Expect(result4[1]).To(Equal(int64(100)))
-		})
-		It("ExGet with flags", func() {
-			a := tair.ExSetArgs{}.New()
-			a.Abs(88)
-			a.Flags(99)
-			exSetRes, err := tairClient.ExSetArgs(ctx, "k", "v", a).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(exSetRes).To(Equal("OK"))
-			res, err := tairClient.ExGetWithFlags(ctx, "k").Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(res[0]).To(Equal("v"))
-			Expect(res[1]).To(Equal(int64(88)))
-			Expect(res[2]).To(Equal(int64(99)))
-		})
-		It("ExIncrBy", func() {
-			result, err := tairClient.ExIncrBy(ctx, "foo", 100).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(int64(100)))
-			a := tair.ExIncrByArgs{}.New()
-			a.Max(150)
-			_, err1 := tairClient.ExIncrByArgs(ctx, "foo", 100, a).Result()
-			Expect(err1).To(HaveOccurred())
-		})
-		It("ExIncrByArgs", func() {
-			result, err := tairClient.ExIncrBy(ctx, "foo", 100).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(int64(100)))
-			a := tair.ExIncrByArgs{}.New()
-			a.Max(300)
-			res1, err1 := tairClient.ExIncrByArgs(ctx, "foo", 100, a).Result()
-			Expect(err1).NotTo(HaveOccurred())
-			Expect(res1).To(Equal(int64(200)))
-		})
-		It("ExIncrByFloat", func() {
-			tairClient.ExSet(ctx, "foo", 100)
-			result, err := tairClient.ExIncrByFloat(ctx, "foo", 10.123).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(110.123))
-		})
-		It("ExCas", func() {
-			tairClient.ExSet(ctx, "foo", "bar")
-			res2, err2 := tairClient.ExCas(ctx, "foo", "bzz", 1).Result()
-			Expect(err2).NotTo(HaveOccurred())
-			Expect(res2[0]).To(Equal("OK"))
-			Expect(res2[1]).To(Equal(""))
-			Expect(res2[2]).To(Equal(int64(2)))
-			res3, err3 := tairClient.ExCas(ctx, "foo", "bee", 1).Result()
-			Expect(err3).NotTo(HaveOccurred())
-			Expect(res3[0]).To(Equal("CAS_FAILED"))
-			Expect(res3[1]).To(Equal("bzz"))
-			Expect(res3[2]).To(Equal(int64(2)))
-		})
+func (suite *TairStringTestSuite) TearDownTest() {
+	assert.NoError(suite.T(), suite.tairClient.Close())
+}
 
-		It("ExCad", func() {
-			tairClient.ExSet(ctx, "foo", "bar")
-			result, err := tairClient.ExCad(ctx, "foo", 0).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(int64(0)))
-			result1, err1 := tairClient.ExCad(ctx, "foo", 1).Result()
-			Expect(err1).NotTo(HaveOccurred())
-			Expect(result1).To(Equal(int64(1)))
-		})
-		It("EXAPPEND", func() {
-			result, err := tairClient.ExAppend(ctx, "exstringkey ", "foo", "nx", "ver", 99).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(int64(1)))
-		})
-		It("EXPREPEND", func() {
-			result, err := tairClient.ExPreAppend(ctx, "exstringkey ", "foo", "nx", "ver", 99).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result).To(Equal(int64(1)))
-		})
-		It("EXGAE", func() {
-			a := tair.ExSetArgs{}.New()
-			a.Ex(10)
-			a.Flags(123)
-			tairClient.ExSetArgs(ctx, "exstringkey", "foo", a)
-			tairClient.TTL(ctx, "exstringkey")
-			result, err := tairClient.ExGae(ctx, "exstringkey", "ex", 20).Result()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(result[0]).To(Equal("foo"))
-			Expect(result[1]).To(Equal(int64(1)))
-			Expect(result[2]).To(Equal(int64(123)))
-		})
-	})
+func (suite *TairStringTestSuite) TestCas() {
+	suite.tairClient.Set(ctx, "k1", "v1", 0)
+	n, err := suite.tairClient.Cas(ctx, "k1", "v2", "v3").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), n, int64(0))
 
-})
+	n, err = suite.tairClient.Cas(ctx, "k1", "v1", "v3").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), n, int64(1))
+
+	res, err := suite.tairClient.Get(ctx, "k1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, "v3")
+}
+
+func (suite *TairStringTestSuite) TestCasArgs() {
+	suite.tairClient.Set(ctx, "foo", "bzz", 0)
+	suite.tairClient.CasArgs(ctx, "foo", "bzz", "too", tair.CasArgs{}.New().Ex(1))
+
+	result, err := suite.tairClient.Get(ctx, "foo").Result()
+	assert.Equal(suite.T(), result, "too")
+	assert.NoError(suite.T(), err)
+	time.Sleep(time.Duration(2) * time.Second)
+
+	result1, err1 := suite.tairClient.Get(ctx, "foo").Result()
+	assert.Error(suite.T(), err1)
+	assert.Equal(suite.T(), result1, "")
+}
+
+func (suite *TairStringTestSuite) TestCad() {
+	suite.tairClient.Set(ctx, "foo", "bar", 0)
+	res, err := suite.tairClient.Cad(ctx, "foo", "bzz").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(0))
+
+	res1, err1 := suite.tairClient.Cad(ctx, "foo", "bar").Result()
+	assert.NoError(suite.T(), err1)
+	assert.Equal(suite.T(), res1, int64(1))
+}
+
+func (suite *TairStringTestSuite) TestExSetArgs() {
+	result2, err2 := suite.tairClient.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Xx()).Result()
+	assert.Error(suite.T(), err2)
+	assert.Equal(suite.T(), result2, "")
+
+	result3, err3 := suite.tairClient.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Nx()).Result()
+	assert.NoError(suite.T(), err3)
+	assert.Equal(suite.T(), result3, "OK")
+}
+
+func (suite *TairStringTestSuite) TestExGet() {
+	result2, err2 := suite.tairClient.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Abs(100)).Result()
+	assert.NoError(suite.T(), err2)
+	assert.Equal(suite.T(), result2, "OK")
+
+	result4, err4 := suite.tairClient.ExGet(ctx, "foo").Result()
+	assert.NoError(suite.T(), err4)
+	assert.Equal(suite.T(), result4[0], "bar")
+	assert.Equal(suite.T(), result4[1], int64(100))
+}
+
+func (suite *TairStringTestSuite) TestExGetWithFlags() {
+	a := tair.ExSetArgs{}.New()
+	a.Abs(88)
+	a.Flags(99)
+	exSetRes, err := suite.tairClient.ExSetArgs(ctx, "k", "v", a).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), exSetRes, "OK")
+
+	res, err := suite.tairClient.ExGetWithFlags(ctx, "k").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res[0], "v")
+	assert.Equal(suite.T(), res[1], int64(88))
+	assert.Equal(suite.T(), res[2], int64(99))
+}
+
+func (suite *TairStringTestSuite) TestExIncrBy() {
+	result, err := suite.tairClient.ExIncrBy(ctx, "foo", 100).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, int64(100))
+
+	a := tair.ExIncrByArgs{}.New()
+	a.Max(150)
+	_, err1 := suite.tairClient.ExIncrByArgs(ctx, "foo", 100, a).Result()
+	assert.Error(suite.T(), err1)
+}
+
+func (suite *TairStringTestSuite) TestExIncrByArgs() {
+	result, err := suite.tairClient.ExIncrBy(ctx, "foo", 100).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, int64(100))
+
+	a := tair.ExIncrByArgs{}.New()
+	a.Max(300)
+	res1, err1 := suite.tairClient.ExIncrByArgs(ctx, "foo", 100, a).Result()
+	assert.NoError(suite.T(), err1)
+	assert.Equal(suite.T(), res1, int64(200))
+}
+
+func (suite *TairStringTestSuite) TestExIncrByFloat() {
+	suite.tairClient.ExSet(ctx, "foo", 100)
+	result, err := suite.tairClient.ExIncrByFloat(ctx, "foo", 10.123).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, 110.123)
+}
+
+func (suite *TairStringTestSuite) TestExCas() {
+	suite.tairClient.ExSet(ctx, "foo", "bar")
+	res2, err2 := suite.tairClient.ExCas(ctx, "foo", "bzz", 1).Result()
+	assert.NoError(suite.T(), err2)
+	assert.Equal(suite.T(), res2[0], "OK")
+	assert.Equal(suite.T(), res2[1], "")
+	assert.Equal(suite.T(), res2[2], int64(2))
+
+	res3, err3 := suite.tairClient.ExCas(ctx, "foo", "bee", 1).Result()
+	assert.NoError(suite.T(), err3)
+	assert.Equal(suite.T(), res3[0], "CAS_FAILED")
+	assert.Equal(suite.T(), res3[1], "bzz")
+	assert.Equal(suite.T(), res3[2], int64(2))
+}
+
+func (suite *TairStringTestSuite) TestExCad() {
+	suite.tairClient.ExSet(ctx, "foo", "bar")
+	result, err := suite.tairClient.ExCad(ctx, "foo", 0).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, int64(0))
+
+	result1, err1 := suite.tairClient.ExCad(ctx, "foo", 1).Result()
+	assert.NoError(suite.T(), err1)
+	assert.Equal(suite.T(), result1, int64(1))
+}
+
+func (suite *TairStringTestSuite) TestEXAPPEND() {
+	result, err := suite.tairClient.ExAppend(ctx, "exstringkey ", "foo", "nx", "ver", 99).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, int64(1))
+}
+
+func (suite *TairStringTestSuite) TestEXPREPEND() {
+	result, err := suite.tairClient.ExPreAppend(ctx, "exstringkey ", "foo", "nx", "ver", 99).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, int64(1))
+}
+
+func (suite *TairStringTestSuite) TestEXGAE() {
+	a := tair.ExSetArgs{}.New()
+	a.Ex(10)
+	a.Flags(123)
+	suite.tairClient.ExSetArgs(ctx, "exstringkey", "foo", a)
+	suite.tairClient.TTL(ctx, "exstringkey")
+	result, err := suite.tairClient.ExGae(ctx, "exstringkey", "ex", 20).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result[0], "foo")
+	assert.Equal(suite.T(), result[1], int64(1))
+	assert.Equal(suite.T(), result[2], int64(123))
+}
+
+func TestTairStringTestSuite(t *testing.T) {
+	suite.Run(t, new(TairStringTestSuite))
+}

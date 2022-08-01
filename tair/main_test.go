@@ -2,13 +2,9 @@ package tair_test
 
 import (
 	"fmt"
-	"os"
-	"testing"
-
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"os"
 	"time"
 )
 
@@ -135,9 +131,4 @@ func eventually(fn func() error, timeout time.Duration) error {
 			return fmt.Errorf("timeout after %s without an error", timeout)
 		}
 	}
-}
-
-func TestGinkgoTairSuite(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "tair-go")
 }
