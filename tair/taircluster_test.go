@@ -2,13 +2,14 @@ package tair_test
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"net"
+	"testing"
 	"time"
 
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var (
@@ -55,213 +56,124 @@ func (s *clusterScenario) newClusterClient(
 	return client
 }
 
-var _ = Describe("TairClusterClient string", func() {
-	// var failover bool
-	var opt *redis.ClusterOptions
-	var client *tair.TairClusterClient
+type TairClusterTestSuite struct {
+	suite.Suite
+	tairClient *tair.TairClusterClient
+}
 
-	BeforeEach(func() {
-		opt = redisClusterOptions()
-		client = cluster.newClusterClient(ctx, opt)
-
-		err := client.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
-			return master.FlushDB(ctx).Err()
-		})
-		Expect(err).NotTo(HaveOccurred())
+func (suite *TairClusterTestSuite) SetupTest() {
+	suite.tairClient = cluster.newClusterClient(ctx, redisClusterOptions())
+	err := suite.tairClient.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
+		return master.FlushDB(ctx).Err()
 	})
+	assert.NoError(suite.T(), err)
+}
 
-	AfterEach(func() {
-		_ = client.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
-			return master.FlushDB(ctx).Err()
-		})
-		Expect(client.Close()).NotTo(HaveOccurred())
+func (suite *TairClusterTestSuite) TearDownTest() {
+	_ = suite.tairClient.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
+		return master.FlushDB(ctx).Err()
 	})
+	assert.NoError(suite.T(), suite.tairClient.Close())
+}
 
-	It("should GET/SET/DEL", func() {
-		err := client.Get(ctx, "foo").Err()
-		Expect(err).To(Equal(redis.Nil))
+func (suite *TairClusterTestSuite) TestClusterCas() {
+	suite.tairClient.Set(ctx, "k1", "v1", 0)
+	n, err := suite.tairClient.Cas(ctx, "k1", "v2", "v3").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), n, int64(0))
 
-		err = client.Set(ctx, "foo", "bar", 0).Err()
-		Expect(err).NotTo(HaveOccurred())
+	n, err = suite.tairClient.Cas(ctx, "k1", "v1", "v3").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), n, int64(1))
 
-		Eventually(func() string {
-			return client.Get(ctx, "foo").Val()
-		}, 30*time.Second).Should(Equal("bar"))
+	res, err := suite.tairClient.Get(ctx, "k1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, "v3")
+}
 
-		cnt, err := client.Del(ctx, "foo").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(cnt).To(Equal(int64(1)))
-	})
+func (suite *TairClusterTestSuite) TestClusterCasArgs() {
+	suite.tairClient.Set(ctx, "foo", "bzz", 0)
+	suite.tairClient.CasArgs(ctx, "foo", "bzz", "too", tair.CasArgs{}.New().Ex(1))
 
-	It("should ExSet ExGet", func() {
-		result1, err1 := client.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Xx()).Result()
-		Expect(err1).To(HaveOccurred())
-		Expect(result1).To(Equal(""))
+	result, err := suite.tairClient.Get(ctx, "foo").Result()
+	assert.Equal(suite.T(), result, "too")
+	assert.NoError(suite.T(), err)
+	time.Sleep(time.Duration(2) * time.Second)
 
-		result2, err2 := client.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Nx()).Result()
-		Expect(err2).NotTo(HaveOccurred())
-		Expect(result2).To(Equal("OK"))
+	result1, err1 := suite.tairClient.Get(ctx, "foo").Result()
+	assert.Error(suite.T(), err1)
+	assert.Equal(suite.T(), result1, "")
+}
 
-		result3, err3 := client.ExSetArgs(ctx, "foo", "bar", tair.ExSetArgs{}.New().Abs(100)).Result()
-		Expect(err3).NotTo(HaveOccurred())
-		Expect(result3).To(Equal("OK"))
+func (suite *TairClusterTestSuite) TestClusterExHSet() {
+	res, err := suite.tairClient.ExHSet(ctx, "k1", "f1", "v1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-		result4, err4 := client.ExGet(ctx, "foo").Result()
-		Expect(err4).NotTo(HaveOccurred())
-		Expect(result4[0]).To(Equal("bar"))
-		Expect(result4[1]).To(Equal(int64(100)))
+	res, err = suite.tairClient.Exists(ctx, "k1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-		a := tair.ExSetArgs{}.New().Abs(88).Flags(99)
-		exSetRes, err := client.ExSetArgs(ctx, "foo1", "bar1", a).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(exSetRes).To(Equal("OK"))
+	result, err := suite.tairClient.ExHGet(ctx, "k1", "f1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, "v1")
+}
 
-		res, err := client.ExGetWithFlags(ctx, "foo1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res[0]).To(Equal("bar1"))
-		Expect(res[1]).To(Equal(int64(88)))
-		Expect(res[2]).To(Equal(int64(99)))
-	})
-})
+func (suite *TairClusterTestSuite) TestClusterExHset() {
+	res, err := suite.tairClient.ExHSet(ctx, "k1", "f1", "v1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-var _ = Describe("TairClusterClient zset", func() {
-	// var failover bool
-	var opt *redis.ClusterOptions
-	var client *tair.TairClusterClient
+	res, err = suite.tairClient.Exists(ctx, "k1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-	BeforeEach(func() {
-		opt = redisClusterOptions()
-		client = cluster.newClusterClient(ctx, opt)
+	result, err := suite.tairClient.ExHGet(ctx, "k1", "f1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, "v1")
+}
 
-		err := client.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
-			return master.FlushDB(ctx).Err()
-		})
-		Expect(err).NotTo(HaveOccurred())
-	})
+func (suite *TairClusterTestSuite) TestClusterExZAdd() {
+	res, err := suite.tairClient.ExZAdd(ctx, "k1", "90.1", "v1").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-	AfterEach(func() {
-		_ = client.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
-			return master.FlushDB(ctx).Err()
-		})
-		Expect(client.Close()).NotTo(HaveOccurred())
-	})
+	zRangeRes, err := suite.tairClient.ExZRange(ctx, "k1", 0, -1).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), zRangeRes[0], "v1")
 
-	It("should Add", func() {
-		res, err := client.ExZAdd(ctx, "k1", "90.1", "v1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
+	res, err = suite.tairClient.ExZAdd(ctx, "foo", "1", "a").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-		zRangeRes, err := client.ExZRange(ctx, "k1", 0, -1).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(zRangeRes[0]).To(Equal("v1"))
-	})
+	res, err = suite.tairClient.ExZAdd(ctx, "foo", "10", "b").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-	It("exzadd test", func() {
-		res, err := client.ExZAdd(ctx, "foo", "1", "a").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
+	res, err = suite.tairClient.ExZAdd(ctx, "foo", "2", "a").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(0))
+}
 
-		res, err = client.ExZAdd(ctx, "foo", "10", "b").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
+func (suite *TairZsetTestSuite) TestClusterExZAddParams() {
+	res, err := suite.tairClient.ExZAddArgs(ctx, "foo", "1", "a", tair.ExZAddArgs{}.New().Xx()).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(0))
 
-		res, err = client.ExZAdd(ctx, "foo", "2", "a").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(0)))
-	})
+	res, err = suite.tairClient.ExZAdd(ctx, "foo", "1", "a").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
 
-	It("exzadd params", func() {
-		res, err := client.ExZAddArgs(ctx, "foo", "1", "a", tair.ExZAddArgs{}.New().Xx()).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(0)))
+	res, err = suite.tairClient.ExZAddArgs(ctx, "foo", "2", "a", tair.ExZAddArgs{}.New().Nx()).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(0))
 
-		res, err = client.ExZAdd(ctx, "foo", "1", "a").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
+	res, err = suite.tairClient.ExZAddManyMemberArgs(ctx, "foo", tair.ExZAddArgs{}.New().Ch(),
+		tair.ExZAddMember{Score: "2", Member: "a"}, tair.ExZAddMember{Score: "1", Member: "b"}).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(2))
+}
 
-		res, err = client.ExZAddArgs(ctx, "foo", "2", "a", tair.ExZAddArgs{}.New().Nx()).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(0)))
-
-		res, err = client.ExZAddManyMemberArgs(ctx, "foo", tair.ExZAddArgs{}.New().Ch(),
-			tair.ExZAddMember{Score: "2", Member: "a"}, tair.ExZAddMember{Score: "1", Member: "b"}).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(2)))
-	})
-
-	It("exzrange basic", func() {
-		res, err := client.ExZAddManyMember(ctx, "foo",
-			tair.ExZAddMember{Score: "1", Member: "a"}, tair.ExZAddMember{Score: "10", Member: "b"},
-			tair.ExZAddMember{Score: "0.1", Member: "c"}, tair.ExZAddMember{Score: "2", Member: "a"}).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(3)))
-
-		ss, err := client.ExZRange(ctx, "foo", 0, 1).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(ss).To(Equal([]string{"c", "a"}))
-
-		ss, err = client.ExZRange(ctx, "foo", 0, -1).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(ss).To(Equal([]string{"c", "a", "b"}))
-
-		ss, err = client.ExZRevRange(ctx, "foo", 0, 1).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(ss).To(Equal([]string{"b", "a"}))
-	})
-})
-
-var _ = Describe("TairClusterClient hash", func() {
-	// var failover bool
-	var opt *redis.ClusterOptions
-	var client *tair.TairClusterClient
-
-	BeforeEach(func() {
-		opt = redisClusterOptions()
-		client = cluster.newClusterClient(ctx, opt)
-
-		err := client.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
-			return master.FlushDB(ctx).Err()
-		})
-		Expect(err).NotTo(HaveOccurred())
-	})
-
-	AfterEach(func() {
-		_ = client.ForEachMaster(ctx, func(ctx context.Context, master *redis.Client) error {
-			return master.FlushDB(ctx).Err()
-		})
-		Expect(client.Close()).NotTo(HaveOccurred())
-	})
-
-	It("EXHGET", func() {
-		res, err := client.ExHSet(ctx, "k1", "f1", "v1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
-		res, err = client.Exists(ctx, "k1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
-		result, err := client.ExHGet(ctx, "k1", "f1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(result).To(Equal("v1"))
-	})
-
-	It("ExHSetByArgs", func() {
-		a := tair.ExHSetArgs{}.New()
-		a.Set = make(map[string]bool)
-		a.Xx()
-		res, err := client.ExHSetArgs(ctx, "k1", "f1", "v1", a).Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(-1)))
-		res, err = client.Exists(ctx, "k1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(0)))
-	})
-
-	It("ExHSetNx", func() {
-		res, err := client.ExHSetNx(ctx, "k1", "f1", "v1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
-		res, err = client.Exists(ctx, "k1").Result()
-		Expect(err).NotTo(HaveOccurred())
-		Expect(res).To(Equal(int64(1)))
-	})
-})
+func TestTairClusterTestSuite(t *testing.T) {
+	suite.Run(t, new(TairClusterTestSuite))
+}
