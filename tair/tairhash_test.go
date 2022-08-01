@@ -4,6 +4,10 @@ import (
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/alibaba/tair-go/tair"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type TairHashTestSuite struct {
