@@ -150,4 +150,12 @@ type TairCmdable interface {
 	TrSetBitArray(ctx context.Context, key, value string) *redis.FloatCmd
 	TrJaccard(ctx context.Context, key1, key2 string) *redis.FloatCmd
 	TrContains(ctx context.Context, key1, key2 string) *redis.BoolCmd
+	// TairBloom
+	BfReserve(ctx context.Context, key string, initCapacity int64, errorRate float64) *redis.StringCmd
+	BfAdd(ctx context.Context, key string, item string) *redis.BoolCmd
+	BfMAdd(ctx context.Context, key string, items ...string) *redis.BoolSliceCmd
+	BfExists(ctx context.Context, key string, item string) *redis.BoolCmd
+	BfMExists(ctx context.Context, key string, items ...string) *redis.BoolSliceCmd
+	BfInsert(ctx context.Context, key string, bfInsertArgs *BfInsertArgs, items ...string) *redis.BoolSliceCmd
+	BfDebug(ctx context.Context, key string) *redis.StringSliceCmd
 }

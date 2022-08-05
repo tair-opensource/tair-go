@@ -2,10 +2,11 @@ package tair_test
 
 import (
 	"fmt"
-	"github.com/alibaba/tair-go/tair"
-	"github.com/go-redis/redis/v8"
 	"os"
 	"time"
+
+	"github.com/alibaba/tair-go/tair"
+	"github.com/go-redis/redis/v8"
 )
 
 const (

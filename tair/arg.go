@@ -35,4 +35,9 @@ const (
 	WITHSCORES = "withscores"
 	LIMIT      = "limit"
 	GT         = "gt"
+
+	CAPACITY = "CAPACITY"
+	ERROR    = "ERROR"
+	NOCREATE = "NOCREATE"
+	ITEMS    = "ITEMS"
 )
