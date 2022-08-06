@@ -3,7 +3,6 @@ package tair_test
 import (
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
-	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -286,5 +285,3 @@ func (suite *TairRoaringTestSuite) TestMultiKey() {
 func TestTairRoaringTestSuite(t *testing.T) {
 	suite.Run(t, new(TairRoaringTestSuite))
 }
-
-
