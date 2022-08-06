@@ -63,4 +63,17 @@ const (
 	FORMAT   = "format"
 	ROOTNAME = "rootname"
 	ARRNAME  = "arrname"
+
+	SIZE = "size"
+	WIN  = "win"
+)
+
+const (
+	ValueIsNull      = "ERR:The value is null"
+	ValueIsEmpty     = "ERR:The value is empty"
+	KeyIsNull        = "ERR:The key is null"
+	KeyIsEmpty       = "ERR:The key is empty"
+	MultiExpireParam = "ERR:The expire param is not single"
+	ExpIsSet         = "ERR:The expire param has been set"
+	OptionIllegal    = "ERR:The option argument error"
 )

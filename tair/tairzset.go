@@ -39,18 +39,18 @@ func (a *ExZAddArgs) Incr() *ExZAddArgs {
 	return a
 }
 
-func (p *ExZAddArgs) GetArgs() []interface{} {
+func (a *ExZAddArgs) GetArgs() []interface{} {
 	args := make([]interface{}, 0)
-	if _, ok := p.Set[XX]; ok {
+	if _, ok := a.Set[XX]; ok {
 		args = append(args, XX)
 	}
-	if _, ok := p.Set[NX]; ok {
+	if _, ok := a.Set[NX]; ok {
 		args = append(args, NX)
 	}
-	if _, ok := p.Set[CH]; ok {
+	if _, ok := a.Set[CH]; ok {
 		args = append(args, CH)
 	}
-	if _, ok := p.Set[INCR]; ok {
+	if _, ok := a.Set[INCR]; ok {
 		args = append(args, INCR)
 	}
 	return args
