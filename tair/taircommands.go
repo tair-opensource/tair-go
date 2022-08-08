@@ -94,4 +94,35 @@ type TairCmdable interface {
 	ExHVals(ctx context.Context, key string) *redis.StringSliceCmd
 	ExHGetAll(ctx context.Context, key string) *redis.StringStringMapCmd
 	ExHScan(ctx context.Context, key string, cursor string) *redis.SliceCmd
+
+	// TairRoaring
+	TrSetBit(ctx context.Context, key string, offset int64, value int64) *redis.IntCmd
+	TrSetBits(ctx context.Context, key string, fields ...int64) *redis.IntCmd
+	TrGetBit(ctx context.Context, key string, offset int64) *redis.IntCmd
+	TrGetBits(ctx context.Context, key string, fields ...int64) *redis.IntSliceCmd
+	TrClearBits(ctx context.Context, key string, fields ...int64) *redis.IntCmd
+	TrRange(ctx context.Context, key string, start int64, end int64) *redis.IntSliceCmd
+	TrRangeBitArray(ctx context.Context, key string, start int64, end int64) *redis.StringCmd
+	TrAppendBitArray(ctx context.Context, key string, offset int64, value string) *redis.IntCmd
+	TrSetRange(ctx context.Context, key string, start int64, end int64) *redis.IntCmd
+	TrFlipRange(ctx context.Context, key string, start int64, end string) *redis.IntCmd
+	TrBitCount(ctx context.Context, key string) *redis.IntCmd
+	TrBitCountRange(ctx context.Context, key string, start int64, end int64) *redis.IntCmd
+	TrMin(ctx context.Context, key string) *redis.IntCmd
+	TrMax(ctx context.Context, key string) *redis.IntCmd
+	TrOptimize(ctx context.Context, key string) *redis.StringCmd
+	TrStat(ctx context.Context, key string, json bool) *redis.StringCmd
+	TrBitPosCount(ctx context.Context, key string, value int64, count int64) *redis.IntCmd
+	TrBitPos(ctx context.Context, key string, value int64) *redis.IntCmd
+	TrRank(ctx context.Context, key string, offset int64) *redis.IntCmd
+	TrBitOp(ctx context.Context, destKey string, operation string, keys ...string) *redis.IntCmd
+	TrBitOpCard(ctx context.Context, operation string, keys ...string) *redis.IntCmd
+	TrScanCount(ctx context.Context, key string, cursor int64, count int64) *redis.SliceCmd
+	TrScan(ctx context.Context, key string, cursor int64) *redis.SliceCmd
+	TrDiff(ctx context.Context, destKey, key1, key2 string) *redis.StringCmd
+	TrSetIntArray(ctx context.Context, key string, fields ...int64) *redis.StringCmd
+	TrAppendIntArray(ctx context.Context, key string, fields ...int64) *redis.StringCmd
+	TrSetBitArray(ctx context.Context, key, value string) *redis.FloatCmd
+	TrJaccard(ctx context.Context, key1, key2 string) *redis.FloatCmd
+	TrContains(ctx context.Context, key1, key2 string) *redis.BoolCmd
 }

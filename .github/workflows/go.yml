@@ -79,3 +79,4 @@ jobs:
           go test -v ./... -run TestTairStringTestSuite/TestTairStringTestSuite
           go test -v ./... -run TestTairStringTestSuite/TestTairHashTestSuite
           go test -v ./... -run TestTairStringTestSuite/TestTairZsetTestSuite
+
