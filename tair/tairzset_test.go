@@ -43,6 +43,24 @@ func (suite *TairZsetTestSuite) TestExZAdd() {
 	assert.Equal(suite.T(), res, int64(0))
 }
 
+func (suite *TairZsetTestSuite) TestExZAddManyScore() {
+	res, err := suite.tairClient.ExZAddManyScore(ctx, "k1", "a", "32", "21", "16").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
+
+	res, err = suite.tairClient.ExZAddManyScore(ctx, "k1", "d", "14", "4", "16").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
+
+	res, err = suite.tairClient.ExZAddManyScore(ctx, "k1", "c", "20", "7", "12").Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res, int64(1))
+
+	res2, err := suite.tairClient.ExZRange(ctx, "k1", 0, -1).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), res2, []string{"d", "c", "a"})
+}
+
 func (suite *TairZsetTestSuite) TestExZAddParams() {
 	res, err := suite.tairClient.ExZAddArgs(ctx, "foo", "1", "a", tair.ExZAddArgs{}.New().Xx()).Result()
 	assert.NoError(suite.T(), err)

@@ -61,7 +61,6 @@ func redisOptions() *redis.Options {
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
-		Password:     "xxx",
 		MaxRetries:   -1,
 
 		PoolSize:           10,
