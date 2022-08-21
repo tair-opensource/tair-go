@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	redisIP            = "127.0.0.1"
+	redisIP            = "ldxtest1.redis.rds.aliyuncs.com"
 	redisPort          = "6379"
 	redisAddr          = redisIP + ":" + redisPort
 	redisSecondaryPort = "6381"
@@ -62,6 +62,7 @@ func redisOptions() *redis.Options {
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
+		Password:     "KFCldx537###",
 		MaxRetries:   -1,
 
 		PoolSize:           10,

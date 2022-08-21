@@ -22,16 +22,7 @@ func (suite *TairTsTestSuite) TearDownTest() {
 }
 
 func (suite *TairTsTestSuite) TestEXGAE() {
-	a := tair.ExSetArgs{}.New()
-	a.Ex(10)
-	a.Flags(123)
-	suite.tairClient.ExSetArgs(ctx, "exstringkey", "foo", a)
-	suite.tairClient.TTL(ctx, "exstringkey")
-	result, err := suite.tairClient.ExGae(ctx, "exstringkey", "ex", 20).Result()
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), result[0], "foo")
-	assert.Equal(suite.T(), result[1], int64(1))
-	assert.Equal(suite.T(), result[2], int64(123))
+
 }
 
 func TestTairTsTestSuite(t *testing.T) {
