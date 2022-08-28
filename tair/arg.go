@@ -59,4 +59,8 @@ const (
 	FIRST       = "FIRST"
 	LAST        = "LAST"
 	RANGE       = "RANGE"
+
+	FORMAT   = "format"
+	ROOTNAME = "rootname"
+	ARRNAME  = "arrname"
 )
