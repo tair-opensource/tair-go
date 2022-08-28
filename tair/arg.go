@@ -66,6 +66,16 @@ const (
 
 	SIZE = "size"
 	WIN  = "win"
+
+	RADIUS = "radius"
+	MEMBER = "member"
+
+	WITHOUTWKT   = "withoutwkt"
+	WITHVALUE    = "withvalue"
+	WITHOUTVALUE = "withoutvalue"
+	WITHDIST     = "withdist"
+	ASC          = "asc"
+	DESC         = "desc"
 )
 
 const (
