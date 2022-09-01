@@ -10,10 +10,13 @@ English | [简体中文](./README-CN.md)
 - [TairHash](https://help.aliyun.com/document_detail/145970.html), 可实现 field 级别的过期。(已[开源](https://github.com/alibaba/TairHash))
 - [TairString](https://help.aliyun.com/document_detail/145902.html), 支持 string 设置 version，增强的`cas`和`cad`命令可轻松实现分布式锁。(已[开源](https://github.com/alibaba/TairString))
 - [TairZset](https://help.aliyun.com/document_detail/292812.html), 支持多维排序。(已[开源](https://github.com/alibaba/TairZset))
+- [TairBloom](https://help.aliyun.com/document_detail/145972.html), 支持动态扩容的布隆过滤器。（待开源）
+- [TairRoaring](https://help.aliyun.com/document_detail/311433.html), Roaring Bitmap, 使用少量的存储空间来实现海量数据的查询优化。（待开源）
+- [TairSearch](https://help.aliyun.com/document_detail/417908.html), 支持ES-LIKE语法的全文索引和搜索模块。（待开源）
 
 ## 安装
 ```
-go get github.com/alibaba/tair-go@v1.0.0
+go get github.com/alibaba/tair-go
 ```
 
 ## 快速开始
@@ -22,7 +25,7 @@ go get github.com/alibaba/tair-go@v1.0.0
 go.mod
 ```
 require (
-	github.com/alibaba/tair-go v1.1.0
+	github.com/alibaba/tair-go v1.1.2
 )
 ```
 
