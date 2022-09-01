@@ -3,13 +3,15 @@
 *.ipr
 *.iws
 .idea/
-.vscode
+.vscode/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+*.coverprofile
 
 # Test binary, built with `go test -c`
 *.test
