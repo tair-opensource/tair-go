@@ -2,6 +2,7 @@ package tair_test
 
 import (
 	"github.com/alibaba/tair-go/tair"
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"math/rand"
@@ -23,10 +24,8 @@ var randomSKey2 = "key2" + randStrTs(20)
 
 var startTs = (time.Now().UnixMilli() - 1000000) / 1000 * 1000
 var startTsStr = strconv.FormatInt(startTs, 10)
-var startTs1 = (time.Now().UnixMilli() - 1000000) / 1000 * 1000
 var endTs = (time.Now().UnixMilli()) / 1000 * 1000
 var endTsStr = strconv.FormatInt(endTs, 10)
-var endTs1 = (time.Now().UnixMilli()) / 1000 * 1000
 
 func randStrTs(size int) string {
 	str := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -46,6 +45,29 @@ func (suite *TairTsTestSuite) SetupTest() {
 
 func (suite *TairTsTestSuite) TearDownTest() {
 	assert.NoError(suite.T(), suite.tairClient.Close())
+}
+
+func (suite *TairTsTestSuite) TestExTsPCreateAndSCreate() {
+
+	r, e := suite.tairClient.TsPCreate(ctx, randomPKey).Result()
+	assert.NoError(suite.T(), e)
+	assert.Equal(suite.T(), r, "OK")
+
+	_, e1 := suite.tairClient.TsPCreate(ctx, randomPKey).Result()
+	assert.Error(suite.T(), e1)
+	assert.Equal(suite.T(), e1, redis.Nil)
+
+	args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024)
+
+	r2, e2 := suite.tairClient.TsSCreate(ctx, randomPKey, randomSKey, args).Result()
+	assert.NoError(suite.T(), e2)
+	assert.Equal(suite.T(), r2, "OK")
+
+	args1 := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
+
+	r3, e3 := suite.tairClient.TsSCreate(ctx, randomPKey, randomSKey2, args1).Result()
+	assert.NoError(suite.T(), e3)
+	assert.Equal(suite.T(), r3, "OK")
 }
 
 func (suite *TairTsTestSuite) TestExTsAdd() {
@@ -428,40 +450,184 @@ func (suite *TairTsTestSuite) TestExTsRange() {
 	}
 }
 
-//func (suite *TairTsTestSuite) TestExTsMRange() {
-//	num := 3
-//	for i := 0; i < num; i++ {
-//		val := float64(i)
-//		ts := startTs + int64(i*1000)
-//		tsStr := strconv.FormatInt(ts, 10)
-//		args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
-//		labels := []string{"label1", "1", "label2", "2"}
-//		args.Labels(labels)
-//
-//		r, e := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey, tsStr, val, args).Result()
-//		assert.NoError(suite.T(), e)
-//		assert.Equal(suite.T(), r, "OK")
-//
-//		r1, e1 := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey2, tsStr, val, args).Result()
-//		assert.NoError(suite.T(), e1)
-//		assert.Equal(suite.T(), r1, "OK")
-//	}
-//
-//	args := tair.ExTsAggregationArgs{}.New().MaxCount(10).Avg(1000)
-//	keys := [...]string{randomSKey, randomSKey2}
-//
-//	r2, e2 := suite.tairClient.ExTsMRangeArgs(ctx, randomPKey, keys, startTsStr, endTsStr, args).Result()
-//	points := r2.DataPoints()
-//	assert.NoError(suite.T(), e2)
-//	assert.Equal(suite.T(), len(points), num)
-//
-//	for i := 0; i < num; i++ {
-//		val := float64(i)
-//		ts := startTs + int64(i*1000)
-//		assert.Equal(suite.T(), points[i].Ts(), ts)
-//		assert.InDelta(suite.T(), points[i].Value(), val, 0.0)
-//	}
-//}
+func (suite *TairTsTestSuite) TestExTsMRange() {
+	num := 3
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		tsStr := strconv.FormatInt(ts, 10)
+		args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
+		labels := []string{"label1", "1", "label2", "2"}
+		args.Labels(labels)
+
+		r, e := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey, tsStr, val, args).Result()
+		assert.NoError(suite.T(), e)
+		assert.Equal(suite.T(), r, "OK")
+	}
+
+	filters := []*tair.ExTsFilter{
+		(&tair.ExTsFilter{}).SetFilter("label1=1"),
+		(&tair.ExTsFilter{}).SetFilter("label2=2"),
+	}
+
+	r1, e1 := suite.tairClient.ExTsMRangeFilter(ctx, randomPKey, startTsStr, endTsStr, filters).Result()
+	assert.NoError(suite.T(), e1)
+	assert.Equal(suite.T(), len(r1), 1)
+	assert.Equal(suite.T(), r1[0].SKey(), randomSKey)
+	labels := r1[0].Labels()
+	assert.Equal(suite.T(), len(labels), 0)
+
+	points := r1[0].DataPoints()
+	assert.Equal(suite.T(), len(points), num)
+
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		assert.Equal(suite.T(), points[i].Ts(), ts)
+		assert.InDelta(suite.T(), points[i].Value(), val, 0.0)
+	}
+}
+
+func (suite *TairTsTestSuite) TestExTsMRangeLabels() {
+	num := 3
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		tsStr := strconv.FormatInt(ts, 10)
+		args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
+		labels := []string{"label1", "1", "label2", "2"}
+		args.Labels(labels)
+
+		r, e := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey, tsStr, val, args).Result()
+		assert.NoError(suite.T(), e)
+		assert.Equal(suite.T(), r, "OK")
+
+		r1, e1 := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey2, tsStr, val, args).Result()
+		assert.NoError(suite.T(), e1)
+		assert.Equal(suite.T(), r1, "OK")
+	}
+
+	filters := []*tair.ExTsFilter{
+		(&tair.ExTsFilter{}).SetFilter("label1=1"),
+		(&tair.ExTsFilter{}).SetFilter("label2=2"),
+	}
+	args := tair.ExTsAggregationArgs{}.New().MaxCount(1000).Avg(10).WithLabels()
+
+	r1, e1 := suite.tairClient.ExTsMRangeFilterArgs(ctx, randomPKey, startTsStr, endTsStr, filters, args).Result()
+	assert.NoError(suite.T(), e1)
+	assert.Equal(suite.T(), len(r1), 2)
+	assert.Equal(suite.T(), r1[1].SKey(), randomSKey)
+
+	labels := r1[0].Labels()
+	assert.Equal(suite.T(), len(labels), 2)
+
+	assert.Equal(suite.T(), labels[0].Name(), "label1")
+	assert.Equal(suite.T(), labels[0].Value(), "1")
+	assert.Equal(suite.T(), labels[1].Name(), "label2")
+	assert.Equal(suite.T(), labels[1].Value(), "2")
+
+	points := r1[1].DataPoints()
+	assert.Equal(suite.T(), len(points), num)
+
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		assert.Equal(suite.T(), points[i].Ts(), ts)
+		assert.InDelta(suite.T(), points[i].Value(), val, 0.0)
+	}
+
+	args.Reverse()
+
+	r2, e2 := suite.tairClient.ExTsMRangeFilterArgs(ctx, randomPKey, startTsStr, endTsStr, filters, args).Result()
+	assert.NoError(suite.T(), e2)
+	assert.Equal(suite.T(), len(r2), 2)
+	assert.Equal(suite.T(), r2[1].SKey(), randomSKey)
+
+	labels2 := r2[0].Labels()
+	assert.Equal(suite.T(), len(labels2), 2)
+
+	assert.Equal(suite.T(), labels2[0].Name(), "label1")
+	assert.Equal(suite.T(), labels2[0].Value(), "1")
+	assert.Equal(suite.T(), labels2[1].Name(), "label2")
+	assert.Equal(suite.T(), labels2[1].Value(), "2")
+
+	points2 := r2[0].DataPoints()
+	assert.Equal(suite.T(), len(points2), num)
+
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		assert.Equal(suite.T(), points2[num-i-1].Ts(), ts)
+		assert.InDelta(suite.T(), points2[num-i-1].Value(), val, 0.0)
+	}
+}
+
+func (suite *TairTsTestSuite) TestExTsPRange() {
+	num := 3
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		tsStr := strconv.FormatInt(ts, 10)
+		args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
+		labels := []string{"label1", "1", "label2", "2"}
+		args.Labels(labels)
+
+		r, e := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey, tsStr, val, args).Result()
+		assert.NoError(suite.T(), e)
+		assert.Equal(suite.T(), r, "OK")
+	}
+
+	filters := []*tair.ExTsFilter{
+		(&tair.ExTsFilter{}).SetFilter("label1=1"),
+		(&tair.ExTsFilter{}).SetFilter("label2=2"),
+	}
+
+	r1, e1 := suite.tairClient.ExTsPRange(ctx, randomPKey, startTsStr, endTsStr, "sum", 1000, filters).Result()
+	assert.NoError(suite.T(), e1)
+	points := r1.DataPoints()
+	assert.Equal(suite.T(), len(points), num)
+
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		assert.Equal(suite.T(), points[i].Ts(), ts)
+		assert.InDelta(suite.T(), points[i].Value(), val, 0.0)
+	}
+}
+
+func (suite *TairTsTestSuite) TestExTsPRangeAggregationSKeyRev() {
+	num := 3
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		tsStr := strconv.FormatInt(ts, 10)
+		args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
+		labels := []string{"label1", "1", "label2", "2"}
+		args.Labels(labels)
+
+		r, e := suite.tairClient.ExTsAddArgs(ctx, randomPKey, randomSKey, tsStr, val, args).Result()
+		assert.NoError(suite.T(), e)
+		assert.Equal(suite.T(), r, "OK")
+	}
+	args := tair.ExTsAggregationArgs{}.New().Reverse()
+
+	filters := []*tair.ExTsFilter{
+		(&tair.ExTsFilter{}).SetFilter("label1=1"),
+		(&tair.ExTsFilter{}).SetFilter("label2=2"),
+	}
+
+	r1, e1 := suite.tairClient.ExTsPRangeArgs(ctx, randomPKey, startTsStr, endTsStr, "sum", 1000, filters, args).Result()
+	assert.NoError(suite.T(), e1)
+	points := r1.DataPoints()
+	assert.Equal(suite.T(), len(points), num)
+
+	for i := 0; i < num; i++ {
+		val := float64(i)
+		ts := startTs + int64(i*1000)
+		assert.Equal(suite.T(), points[num-1-i].Ts(), ts)
+		assert.InDelta(suite.T(), points[num-1-i].Value(), val, 0.0)
+	}
+}
 
 func TestTairTsTestSuite(t *testing.T) {
 	suite.Run(t, new(TairTsTestSuite))

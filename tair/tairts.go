@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+var MENUS = [...]string{MIN, MAX, SUM, AVG, STDP, STDS, COUNT, FIRST, LAST, RANGE}
+
 // struct
 
 type ExTsDataPoint struct {
@@ -55,15 +57,24 @@ func (a *ExTsFilter) SetFilter(filter string) *ExTsFilter {
 }
 
 // cmd
+
 type ExTsLabelCmd struct {
 	*redis.SliceCmd
 	name  string
 	value string
 }
 
-func (cmd *ExTsLabelCmd) Build(exTsLabelCmd interface{}) *ExTsLabelCmd {
-	cmd.name = exTsLabelCmd.(string)
-	cmd.value = exTsLabelCmd.(string)
+func (cmd *ExTsLabelCmd) Value() string {
+	return cmd.value
+}
+func (cmd *ExTsLabelCmd) Name() string {
+	return cmd.name
+}
+
+func (cmd *ExTsLabelCmd) BuildForTsMRangeString(exTsLabelCmd interface{}) *ExTsLabelCmd {
+	c := exTsLabelCmd.([]interface{})
+	cmd.name = c[0].(string)
+	cmd.value = c[1].(string)
 	return cmd
 }
 
@@ -75,24 +86,43 @@ type ExTsSKeyCmd struct {
 	token      int64
 }
 
-func (cmd *ExTsSKeyCmd) Build(exTsSKeyCmd interface{}) *ExTsSKeyCmd {
+func (cmd *ExTsSKeyCmd) BuildExTsSKeyCmd() *ExTsSKeyCmd {
+	val := cmd.Val()
+	dataPoints := val[0].([]interface{})
+	e := &ExTsSKeyCmd{}
+	e.labels = make([]*ExTsLabelCmd, 0)
+	dataPointsSlice := make([]*ExTsDataPointCmd, 0)
+	for _, dataPoint := range dataPoints {
+		point := dataPoint.([]interface{})
+		p := &ExTsDataPointCmd{}
+		p.ts = point[0].(int64)
+		p.value = point[1].(string)
+		dataPointsSlice = append(dataPointsSlice, p)
+	}
+	cmd.dataPoints = dataPointsSlice
+	return cmd
+}
+
+func (cmd *ExTsSKeyCmd) BuildForExTsRangeString(exTsSKeyCmd interface{}) *ExTsSKeyCmd {
 	c := exTsSKeyCmd.([]interface{})
 	cmd.sKey = c[0].(string)
+	cmd.token = c[3].(int64)
+	// labels
 	labelSlice := make([]*ExTsLabelCmd, 0)
 	for _, cmdItem := range c[1].([]interface{}) {
 		labelCmd := &ExTsLabelCmd{}
-		labelCmd.Build(cmdItem)
+		labelCmd.BuildForTsMRangeString(cmdItem)
 		labelSlice = append(labelSlice, labelCmd)
 	}
 	cmd.labels = labelSlice
+	// dataPoints
 	dataPointSlice := make([]*ExTsDataPointCmd, 0)
 	for _, cmdItem := range c[2].([]interface{}) {
 		dataPointCmd := &ExTsDataPointCmd{}
-		dataPointCmd.Build(cmdItem)
+		dataPointCmd.BuildForTsMRangeString(cmdItem)
 		dataPointSlice = append(dataPointSlice, dataPointCmd)
 	}
 	cmd.dataPoints = dataPointSlice
-	cmd.token = c[3].(int64)
 	return cmd
 }
 
@@ -132,7 +162,7 @@ func NewExTsSKeyCmd(cmd *redis.SliceCmd) *ExTsSKeyCmd {
 	c := &ExTsSKeyCmd{
 		SliceCmd: cmd,
 	}
-	c.Build(c.Val()) // 直接，构造slicecmd ，然后为不同的命令生成不同的Build函数。
+	c.BuildExTsSKeyCmd() // build self from built-in val
 	return c
 }
 
@@ -168,7 +198,7 @@ type ExTsDataPointCmd struct {
 	value string
 }
 
-func (cmd *ExTsDataPointCmd) Build(exTsDAtaPointCmd interface{}) *ExTsDataPointCmd {
+func (cmd *ExTsDataPointCmd) BuildForTsMRangeString(exTsDAtaPointCmd interface{}) *ExTsDataPointCmd {
 	c := exTsDAtaPointCmd.([]interface{})
 	cmd.ts = c[0].(int64)
 	cmd.value = c[1].(string)
@@ -183,7 +213,7 @@ func NewExTsDataPointCmd(sliceCmd *redis.SliceCmd) *ExTsDataPointCmd {
 	cmd := &ExTsDataPointCmd{
 		SliceCmd: sliceCmd,
 	}
-	cmd.Build(cmd.Val())
+	cmd.BuildForTsMRangeString(cmd.Val())
 	return cmd
 }
 
@@ -216,16 +246,19 @@ func NewExTsSKeySliceCmd(cmd *redis.SliceCmd) *ExTsSKeySliceCmd {
 	c := &ExTsSKeySliceCmd{
 		SliceCmd: cmd,
 	}
+	c.BuildForExTsMRangeString()
+	return c
+}
+
+func (cmd *ExTsSKeySliceCmd) BuildForExTsMRangeString() *ExTsSKeySliceCmd {
 	exTsSKeyCmdSlice := make([]*ExTsSKeyCmd, 0)
-	for _, item := range c.Val() {
+	for _, item := range cmd.Val() {
 		exTsSKeyCmd := &ExTsSKeyCmd{}
-		//exTsSKeyCmd := NewExTsSKeyCmd(item)
-		//exTsSKeyCmd.SetVal(item.([]interface{}))
-		exTsSKeyCmd.Build(item)
+		exTsSKeyCmd.BuildForExTsRangeString(item)
 		exTsSKeyCmdSlice = append(exTsSKeyCmdSlice, exTsSKeyCmd)
 	}
-	c.val = exTsSKeyCmdSlice
-	return c
+	cmd.val = exTsSKeyCmdSlice
+	return cmd
 }
 
 func (cmd *ExTsSKeySliceCmd) Result() ([]*ExTsSKeyCmd, error) {
@@ -242,31 +275,6 @@ func (a ExTsMAddArgs) New() *ExTsMAddArgs {
 	a.Set = make(map[string]bool)
 	return &a
 }
-
-type ExTsSpecifiedKeysArgs struct {
-	arg
-}
-
-func (a ExTsSpecifiedKeysArgs) New() *ExTsSpecifiedKeysArgs {
-	a.Set = make(map[string]bool)
-	return &a
-}
-
-func (a *ExTsSpecifiedKeysArgs) JoinArgs(pKey string, sKeys []string, startTs string, endTs string) []interface{} {
-	args := make([]interface{}, 0)
-	args = append(args, pKey)
-	args = append(args, len(sKeys))
-	for _, sKey := range sKeys {
-		args = append(args, sKey)
-	}
-	args = append(args, startTs, endTs)
-	return args
-
-}
-
-//func (a *ExTsMAddArgs) GetArgs() []interface{} {
-//
-//}
 
 func (a *ExTsMAddArgs) JoinArgs(pKey string, points []*ExTsDataPoint) []interface{} {
 	args := make([]interface{}, 0)
@@ -381,8 +389,6 @@ type ExTsAggregationArgs struct {
 	aggRange    int64
 }
 
-var MENUS = [...]string{MIN, MAX, SUM, AVG, STDP, STDS, COUNT, FIRST, LAST, RANGE}
-
 func (a ExTsAggregationArgs) New() *ExTsAggregationArgs {
 	a.Set = make(map[string]bool)
 	a.Map = make(map[string]interface{})
@@ -406,69 +412,69 @@ func (a *ExTsAggregationArgs) MaxCount(maxCount int64) *ExTsAggregationArgs {
 	return a
 }
 
-func (a *ExTsAggregationArgs) Min(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Min(min int64) *ExTsAggregationArgs {
 	a.Set[MIN] = true
-	a.min = timeBucket
-	a.Map[MIN] = timeBucket
+	a.min = min
+	a.Map[MIN] = min
 	return a
 }
 
-func (a *ExTsAggregationArgs) Max(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Max(max int64) *ExTsAggregationArgs {
 	a.Set[MAX] = true
-	a.max = timeBucket
-	a.Map[MAX] = timeBucket
+	a.max = max
+	a.Map[MAX] = max
 	return a
 }
-func (a *ExTsAggregationArgs) Sum(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Sum(sum int64) *ExTsAggregationArgs {
 	a.Set[SUM] = true
-	a.sum = timeBucket
-	a.Map[SUM] = timeBucket
+	a.sum = sum
+	a.Map[SUM] = sum
 	return a
 }
-func (a *ExTsAggregationArgs) Avg(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Avg(avg int64) *ExTsAggregationArgs {
 	a.Set[AVG] = true
-	a.avg = timeBucket
-	a.Map[AVG] = timeBucket
+	a.avg = avg
+	a.Map[AVG] = avg
 	return a
 }
-func (a *ExTsAggregationArgs) StdP(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) StdP(stdP int64) *ExTsAggregationArgs {
 	a.Set[STDP] = true
-	a.stdp = timeBucket
-	a.Map[STDP] = timeBucket
+	a.stdp = stdP
+	a.Map[STDP] = stdP
 	return a
 }
 
-func (a *ExTsAggregationArgs) StdS(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) StdS(stdS int64) *ExTsAggregationArgs {
 	a.Set[STDS] = true
-	a.stds = timeBucket
-	a.Map[STDS] = timeBucket
+	a.stds = stdS
+	a.Map[STDS] = stdS
 	return a
 }
-func (a *ExTsAggregationArgs) Count(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Count(count int64) *ExTsAggregationArgs {
 	a.Set[COUNT] = true
-	a.count = timeBucket
-	a.Map[COUNT] = timeBucket
+	a.count = count
+	a.Map[COUNT] = count
 	return a
 }
-func (a *ExTsAggregationArgs) First(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) First(first int64) *ExTsAggregationArgs {
 	a.Set[FIRST] = true
-	a.first = timeBucket
-	a.Map[FIRST] = timeBucket
+	a.first = first
+	a.Map[FIRST] = first
 
 	return a
 }
 
-func (a *ExTsAggregationArgs) Last(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Last(last int64) *ExTsAggregationArgs {
 	a.Set[LAST] = true
-	a.last = timeBucket
-	a.Map[LAST] = timeBucket
+	a.last = last
+	a.Map[LAST] = last
 
 	return a
 }
-func (a *ExTsAggregationArgs) Range(timeBucket int64) *ExTsAggregationArgs {
+func (a *ExTsAggregationArgs) Range(tsRange int64) *ExTsAggregationArgs {
 	a.Set[RANGE] = true
-	a.aggRange = timeBucket
-	a.Map[RANGE] = timeBucket
+	a.aggRange = tsRange
+	a.Map[RANGE] = tsRange
 	return a
 }
 
@@ -480,7 +486,6 @@ func (a *ExTsAggregationArgs) GetRangeArgs() []interface{} {
 	if _, ok := a.Set[REVERSE]; ok {
 		args = append(args, REVERSE)
 	}
-	// todo
 	for _, menu := range MENUS {
 		if _, ok := a.Set[menu]; ok {
 			args = append(args, AGGREGATION, menu)
@@ -496,11 +501,9 @@ func (a *ExTsAggregationArgs) GetSRangeArgs(filters []*ExTsFilter) []interface{}
 	if _, ok := a.Set[MAXCOUNT]; ok {
 		args = append(args, MAXCOUNT)
 	}
-
-	// todo
 	for _, menu := range MENUS {
 		if _, ok := a.Set[menu]; ok {
-			args = append(args, AGGREGATION, menu)
+			args = append(args, AGGREGATION, menu, a.Map[menu])
 			break
 		}
 	}
@@ -530,20 +533,19 @@ func (a *ExTsAggregationArgs) GetMRangeArgs(pKey string, sKeys []string, startTs
 	}
 	args = append(args, startTs, endTs)
 	if _, ok := a.Set[MAXCOUNT]; ok {
-		args = append(args, MAXCOUNT)
-	}
-	// todo
-	for _, menu := range MENUS {
-		if _, ok := a.Set[menu]; ok {
-			args = append(args, AGGREGATION, menu)
-			break
-		}
+		args = append(args, MAXCOUNT, a.Map[MAXCOUNT])
 	}
 	if _, ok := a.Set[WITHLABELS]; ok {
 		args = append(args, WITHLABELS)
 	}
 	if _, ok := a.Set[REVERSE]; ok {
 		args = append(args, REVERSE)
+	}
+	for _, menu := range MENUS {
+		if _, ok := a.Set[menu]; ok {
+			args = append(args, AGGREGATION, menu, a.Map[menu])
+			break
+		}
 	}
 	return args
 }
@@ -551,34 +553,8 @@ func (a *ExTsAggregationArgs) GetMRangeArgs(pKey string, sKeys []string, startTs
 func (a *ExTsAggregationArgs) GetMRangeFilter(filters []*ExTsFilter) []interface{} {
 	args := make([]interface{}, 0)
 	if _, ok := a.Set[MAXCOUNT]; ok {
-		args = append(args, MAXCOUNT)
+		args = append(args, MAXCOUNT, a.Map[MAXCOUNT])
 	}
-	// todo
-	for _, menu := range MENUS {
-		if _, ok := a.Set[menu]; ok {
-			args = append(args, AGGREGATION, menu)
-			break
-		}
-	}
-	if _, ok := a.Set[WITHLABELS]; ok {
-		args = append(args, WITHLABELS)
-	}
-	if _, ok := a.Set[REVERSE]; ok {
-		args = append(args, REVERSE)
-	}
-	args = append(args, FILTER)
-	for _, filter := range filters {
-		args = append(args, filter.Filter())
-	}
-	return args
-}
-
-func (a *ExTsAggregationArgs) GetMRangeArgsFilter(filters []*ExTsFilter) []interface{} {
-	args := make([]interface{}, 0)
-	if _, ok := a.Set[MAXCOUNT]; ok {
-		args = append(args, MAXCOUNT)
-	}
-	// todo
 	for _, menu := range MENUS {
 		if _, ok := a.Set[menu]; ok {
 			args = append(args, AGGREGATION, menu, a.Map[menu])
@@ -591,6 +567,10 @@ func (a *ExTsAggregationArgs) GetMRangeArgsFilter(filters []*ExTsFilter) []inter
 	if _, ok := a.Set[REVERSE]; ok {
 		args = append(args, REVERSE)
 	}
+	args = append(args, FILTER)
+	for _, filter := range filters {
+		args = append(args, filter.Filter())
+	}
 	return args
 }
 
@@ -599,11 +579,6 @@ func (a *ExTsAggregationArgs) GetPRangeArgs(filters []*ExTsFilter) []interface{}
 	if _, ok := a.Set[MAXCOUNT]; ok {
 		args = append(args, MAXCOUNT)
 	}
-	args = append(args, FILTER)
-	for _, filter := range filters {
-		args = append(args, filter.Filter())
-	}
-	// todo
 	for _, menu := range MENUS {
 		if _, ok := a.Set[menu]; ok {
 			args = append(args, AGGREGATION, menu)
@@ -626,22 +601,22 @@ func (a *ExTsAggregationArgs) GetPRangeArgs(filters []*ExTsFilter) []interface{}
 
 // method
 
-func (tc tairCmdable) TsPCreate(ctx context.Context, key string, value interface{}) *redis.StringCmd {
-	args := make([]interface{}, 3)
+func (tc tairCmdable) TsPCreate(ctx context.Context, key string) *redis.StringCmd {
+	args := make([]interface{}, 2)
 	args[0] = "EXTS.P.CREATE"
 	args[1] = key
-	args[2] = value
 	cmd := redis.NewStringCmd(ctx, args...)
 	_ = tc(ctx, cmd)
 	return cmd
 }
 
-func (tc tairCmdable) TsSCreate(ctx context.Context, key string, value interface{}) *redis.StringCmd {
-	args := make([]interface{}, 3)
-	args[0] = "EXTS.S.CREATE"
-	args[1] = key
-	args[2] = value
-	cmd := redis.NewStringCmd(ctx, args...)
+func (tc tairCmdable) TsSCreate(ctx context.Context, key string, value interface{}, args *ExTsAttributeArgs) *redis.StringCmd {
+	a := make([]interface{}, 3)
+	a[0] = "EXTS.S.CREATE"
+	a[1] = key
+	a[2] = value
+	a = append(a, args.GetArgs()...)
+	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
 }
@@ -807,7 +782,7 @@ func (tc tairCmdable) ExTsRangeArgs(ctx context.Context, pKey string, sKey strin
 
 func (tc tairCmdable) ExTsMRange(ctx context.Context, pKey string, startTs string, endTs string, filters []*ExTsFilter) *ExTsSKeySliceCmd {
 	a := make([]interface{}, 4)
-	a[0] = "EXTS.S.RANGE.KEYS"
+	a[0] = "EXTS.S.MRANGE"
 	a[1] = pKey
 	a[2] = startTs
 	a[3] = endTs
@@ -819,27 +794,12 @@ func (tc tairCmdable) ExTsMRange(ctx context.Context, pKey string, startTs strin
 	return resCmd
 }
 
-func (tc tairCmdable) ExTsMRangeArgs(ctx context.Context, pKey string, sKeys []string, startTs string, endTs string, args *ExTsAggregationArgs) *ExTsSKeySliceCmd {
-	a := make([]interface{}, 2)
-	a[0] = "EXTS.S.RANGE.KEYS"
-	a[1] = pKey
-	for _, sKey := range sKeys {
-		a = append(a, sKey)
-	}
-	a = append(a, startTs, endTs)
-	a = append(a, args.GetMRangeArgs(pKey, sKeys, startTs, endTs)...)
-	cmd := redis.NewSliceCmd(ctx, a...)
-	_ = tc(ctx, cmd)
-	resCmd := NewExTsSKeySliceCmd(cmd)
-	return resCmd
-}
-
 func (tc tairCmdable) ExTsMRangeFilter(ctx context.Context, pKey string, startTs string, endTs string, filters []*ExTsFilter) *ExTsSKeySliceCmd {
-	a := make([]interface{}, 5)
+	a := make([]interface{}, 4)
 	a[0] = "EXTS.S.MRANGE"
 	a[1] = pKey
-	a[3] = startTs
-	a[4] = endTs
+	a[2] = startTs
+	a[3] = endTs
 	args := ExTsAggregationArgs{}.New()
 	a = append(a, args.GetMRangeFilter(filters)...)
 	cmd := redis.NewSliceCmd(ctx, a...)
@@ -849,11 +809,11 @@ func (tc tairCmdable) ExTsMRangeFilter(ctx context.Context, pKey string, startTs
 }
 
 func (tc tairCmdable) ExTsMRangeFilterArgs(ctx context.Context, pKey string, startTs string, endTs string, filters []*ExTsFilter, args *ExTsAggregationArgs) *ExTsSKeySliceCmd {
-	a := make([]interface{}, 5)
+	a := make([]interface{}, 4)
 	a[0] = "EXTS.S.MRANGE"
 	a[1] = pKey
-	a[3] = startTs
-	a[4] = endTs
+	a[2] = startTs
+	a[3] = endTs
 	a = append(a, args.GetMRangeFilter(filters)...)
 	cmd := redis.NewSliceCmd(ctx, a...)
 	_ = tc(ctx, cmd)
@@ -861,34 +821,34 @@ func (tc tairCmdable) ExTsMRangeFilterArgs(ctx context.Context, pKey string, sta
 	return resCmd
 }
 
-func (tc tairCmdable) ExTsPRange(ctx context.Context, pKey string, startTs string, endTs string, pkeyAggregationType string, pkeyTimeBucket int64, filters []*ExTsFilter) *ExTsSKeySliceCmd {
-	a := make([]interface{}, 7)
+func (tc tairCmdable) ExTsPRange(ctx context.Context, pKey string, startTs string, endTs string, pkeyAggregationType string, pkeyTimeBucket int64, filters []*ExTsFilter) *ExTsSKeyCmd {
+	a := make([]interface{}, 6)
 	a[0] = "EXTS.P.RANGE"
 	a[1] = pKey
-	a[3] = startTs
-	a[4] = endTs
-	a[5] = pkeyAggregationType
-	a[6] = pkeyTimeBucket
+	a[2] = startTs
+	a[3] = endTs
+	a[4] = pkeyAggregationType
+	a[5] = pkeyTimeBucket
 	args := ExTsAggregationArgs{}.New()
 	a = append(a, args.GetPRangeArgs(filters)...)
 	cmd := redis.NewSliceCmd(ctx, a...)
 	_ = tc(ctx, cmd)
-	resCmd := NewExTsSKeySliceCmd(cmd)
+	resCmd := NewExTsSKeyCmd(cmd)
 	return resCmd
 }
 
-func (tc tairCmdable) ExTsPRangeArgs(ctx context.Context, pKey string, startTs string, endTs string, pkeyAggregationType string, pkeyTimeBucket int64, filters []*ExTsFilter, args *ExTsAggregationArgs) *ExTsSKeySliceCmd {
-	a := make([]interface{}, 7)
+func (tc tairCmdable) ExTsPRangeArgs(ctx context.Context, pKey string, startTs string, endTs string, pkeyAggregationType string, pkeyTimeBucket int64, filters []*ExTsFilter, args *ExTsAggregationArgs) *ExTsSKeyCmd {
+	a := make([]interface{}, 6)
 	a[0] = "EXTS.P.RANGE"
 	a[1] = pKey
-	a[3] = startTs
-	a[4] = endTs
-	a[5] = pkeyAggregationType
-	a[6] = pkeyTimeBucket
+	a[2] = startTs
+	a[3] = endTs
+	a[4] = pkeyAggregationType
+	a[5] = pkeyTimeBucket
 	a = append(a, args.GetPRangeArgs(filters)...)
 	cmd := redis.NewSliceCmd(ctx, a...)
 	_ = tc(ctx, cmd)
-	resCmd := NewExTsSKeySliceCmd(cmd)
+	resCmd := NewExTsSKeyCmd(cmd)
 	return resCmd
 }
 
@@ -936,19 +896,19 @@ func (tc tairCmdable) ExTsMRawModifyArgs(ctx context.Context, pKey string, sKeys
 	return cmd
 }
 
-func (tc tairCmdable) ExTsRawIncr(ctx context.Context, pKey string, sKey string, ts string, value float64) *redis.StringSliceCmd {
+func (tc tairCmdable) ExTsRawIncr(ctx context.Context, pKey string, sKey string, ts string, value float64) *redis.StringCmd {
 	a := make([]interface{}, 5)
 	a[0] = "EXTS.S.RAW_MODIFY"
 	a[1] = pKey
 	a[2] = sKey
 	a[3] = ts
 	a[4] = value
-	cmd := redis.NewStringSliceCmd(ctx, a...)
+	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
 }
 
-func (tc tairCmdable) ExTsRawIncrArgs(ctx context.Context, pKey string, sKey string, ts string, value float64, args *ExTsAttributeArgs) *redis.StringSliceCmd {
+func (tc tairCmdable) ExTsRawIncrArgs(ctx context.Context, pKey string, sKey string, ts string, value float64, args *ExTsAttributeArgs) *redis.StringCmd {
 	a := make([]interface{}, 5)
 	a[0] = "EXTS.S.RAW_MODIFY"
 	a[1] = pKey
@@ -956,7 +916,7 @@ func (tc tairCmdable) ExTsRawIncrArgs(ctx context.Context, pKey string, sKey str
 	a[3] = ts
 	a[4] = value
 	a = append(a, args.GetArgs()...)
-	cmd := redis.NewStringSliceCmd(ctx, a...)
+	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
 }
