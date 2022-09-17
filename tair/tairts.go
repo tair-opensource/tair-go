@@ -2,8 +2,9 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"strconv"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var MENUS = [...]string{MIN, MAX, SUM, AVG, STDP, STDS, COUNT, FIRST, LAST, RANGE}
@@ -329,6 +330,7 @@ func (a *ExTsAttributeArgs) JoinArgs(pKey string, points []*ExTsDataPoint) []int
 	}
 	return args
 }
+
 func (a *ExTsAttributeArgs) GetArgs() []interface{} {
 	args := make([]interface{}, 0)
 	if _, ok := a.Set[UNCOMPRESSED]; ok {
@@ -421,18 +423,21 @@ func (a *ExTsAggregationArgs) Max(max int64) *ExTsAggregationArgs {
 	a.Map[MAX] = max
 	return a
 }
+
 func (a *ExTsAggregationArgs) Sum(sum int64) *ExTsAggregationArgs {
 	a.Set[SUM] = true
 	a.sum = sum
 	a.Map[SUM] = sum
 	return a
 }
+
 func (a *ExTsAggregationArgs) Avg(avg int64) *ExTsAggregationArgs {
 	a.Set[AVG] = true
 	a.avg = avg
 	a.Map[AVG] = avg
 	return a
 }
+
 func (a *ExTsAggregationArgs) StdP(stdP int64) *ExTsAggregationArgs {
 	a.Set[STDP] = true
 	a.stdp = stdP
@@ -446,12 +451,14 @@ func (a *ExTsAggregationArgs) StdS(stdS int64) *ExTsAggregationArgs {
 	a.Map[STDS] = stdS
 	return a
 }
+
 func (a *ExTsAggregationArgs) Count(count int64) *ExTsAggregationArgs {
 	a.Set[COUNT] = true
 	a.count = count
 	a.Map[COUNT] = count
 	return a
 }
+
 func (a *ExTsAggregationArgs) First(first int64) *ExTsAggregationArgs {
 	a.Set[FIRST] = true
 	a.first = first
@@ -467,6 +474,7 @@ func (a *ExTsAggregationArgs) Last(last int64) *ExTsAggregationArgs {
 
 	return a
 }
+
 func (a *ExTsAggregationArgs) Range(tsRange int64) *ExTsAggregationArgs {
 	a.Set[RANGE] = true
 	a.aggRange = tsRange

@@ -1,14 +1,15 @@
 package tair_test
 
 import (
-	"github.com/alibaba/tair-go/tair"
-	"github.com/go-redis/redis/v8"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"math/rand"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/alibaba/tair-go/tair"
+	"github.com/go-redis/redis/v8"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type TairTsTestSuite struct {
@@ -16,16 +17,20 @@ type TairTsTestSuite struct {
 	tairClient *tair.TairClient
 }
 
-var randomPKey = "randomPkey_" + randStrTs(20)
-var randomPKey1 = "randomPkey_" + randStrTs(20)
-var randomSKey = "key" + randStrTs(20)
-var randomSKey1 = "key" + randStrTs(20)
-var randomSKey2 = "key2" + randStrTs(20)
+var (
+	randomPKey  = "randomPkey_" + randStrTs(20)
+	randomPKey1 = "randomPkey_" + randStrTs(20)
+	randomSKey  = "key" + randStrTs(20)
+	randomSKey1 = "key" + randStrTs(20)
+	randomSKey2 = "key2" + randStrTs(20)
+)
 
-var startTs = (time.Now().UnixMilli() - 1000000) / 1000 * 1000
-var startTsStr = strconv.FormatInt(startTs, 10)
-var endTs = (time.Now().UnixMilli()) / 1000 * 1000
-var endTsStr = strconv.FormatInt(endTs, 10)
+var (
+	startTs    = (time.Now().UnixMilli() - 1000000) / 1000 * 1000
+	startTsStr = strconv.FormatInt(startTs, 10)
+	endTs      = (time.Now().UnixMilli()) / 1000 * 1000
+	endTsStr   = strconv.FormatInt(endTs, 10)
+)
 
 func randStrTs(size int) string {
 	str := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -48,7 +53,6 @@ func (suite *TairTsTestSuite) TearDownTest() {
 }
 
 func (suite *TairTsTestSuite) TestExTsPCreateAndSCreate() {
-
 	r, e := suite.tairClient.TsPCreate(ctx, randomPKey).Result()
 	assert.NoError(suite.T(), e)
 	assert.Equal(suite.T(), r, "OK")
@@ -107,7 +111,6 @@ func (suite *TairTsTestSuite) TestExTsAdd() {
 }
 
 func (suite *TairTsTestSuite) TestExTsAlter() {
-
 	val := 0.0
 	ts := startTs
 	args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024).UnCompressed()
@@ -246,7 +249,6 @@ func (suite *TairTsTestSuite) TestExTsRawMModify() {
 	assert.NoError(suite.T(), e)
 	for _, res := range r {
 		assert.Equal(suite.T(), res, "OK")
-
 	}
 	r2, e2 := suite.tairClient.ExTsGet(ctx, randomPKey, randomSKey).Result()
 	assert.NoError(suite.T(), e2)
@@ -307,8 +309,8 @@ func (suite *TairTsTestSuite) TestExTsRawMIncr() {
 	assert.NoError(suite.T(), e)
 	for _, res := range r {
 		assert.Equal(suite.T(), res, "OK")
-
 	}
+
 	r2, e2 := suite.tairClient.ExTsGet(ctx, randomPKey, randomSKey).Result()
 	assert.NoError(suite.T(), e2)
 	assert.Equal(suite.T(), r2.Ts(), ts)
@@ -367,6 +369,7 @@ func (suite *TairTsTestSuite) TestExTsGet() {
 	assert.NoError(suite.T(), e1)
 	assert.Equal(suite.T(), r1.Value(), 0.0)
 }
+
 func (suite *TairTsTestSuite) TestExTsQuery() {
 	val := 0.0
 	tsStr := strconv.FormatInt(startTs, 10)
