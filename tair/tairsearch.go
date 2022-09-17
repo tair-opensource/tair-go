@@ -10,18 +10,18 @@ type protocolType int
 
 const (
 	NONE protocolType = iota
-	MATCH
-	COUNT
+	ProtoMatch
+	ProtoCount
 )
 
 func (p protocolType) String() string {
 	switch p {
 	case NONE:
 		return "NONE"
-	case MATCH:
-		return "MATCH"
-	case COUNT:
-		return "COUNT"
+	case ProtoMatch:
+		return "Match"
+	case ProtoCount:
+		return "Count"
 	default:
 		return "NA"
 	}
@@ -76,24 +76,24 @@ func (a TftScanArgs) New() *TftScanArgs {
 
 func (a *TftScanArgs) GetArgs() []interface{} {
 	args := make([]interface{}, 0)
-	if _, ok := a.Set[MATCH.String()]; ok {
-		args = append(args, MATCH.String(), a.match)
+	if _, ok := a.Set[ProtoMatch.String()]; ok {
+		args = append(args, ProtoMatch.String(), a.match)
 	}
-	if _, ok := a.Set[COUNT.String()]; ok {
-		args = append(args, COUNT.String(), a.count)
+	if _, ok := a.Set[ProtoCount.String()]; ok {
+		args = append(args, ProtoCount.String(), a.count)
 	}
 	return args
 }
 
 func (a *TftScanArgs) Match(pattern string) *TftScanArgs {
-	a.Set[MATCH.String()] = true
+	a.Set[ProtoMatch.String()] = true
 	a.match = pattern
 	return a
 }
 
 // 这里为什么要用 Integer
 func (a *TftScanArgs) Count(count int64) *TftScanArgs {
-	a.Set[COUNT.String()] = true
+	a.Set[ProtoCount.String()] = true
 	a.count = count
 	return a
 }

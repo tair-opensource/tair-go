@@ -36,10 +36,11 @@ const (
 	LIMIT      = "limit"
 	GT         = "gt"
 
-	CAPACITY     = "CAPACITY"
-	ERROR        = "ERROR"
-	NOCREATE     = "NOCREATE"
-	ITEMS        = "ITEMS"
+	CAPACITY = "CAPACITY"
+	ERROR    = "ERROR"
+	NOCREATE = "NOCREATE"
+	ITEMS    = "ITEMS"
+
 	UNCOMPRESSED = "UNCOMPRESSED"
 	DATA_ET      = "DATA_ET"
 	CHUNK_SIZE   = "CHUNK_SIZE"

@@ -371,22 +371,18 @@ func (a *ExTsQueryArgs) JoinArgs(pKey string, filters []*ExTsFilter) []interface
 
 type ExTsAggregationArgs struct {
 	arg
-	Map         map[string]interface{}
-	maxCount    int64
-	withLabels  string
-	reverse     string
-	filter      string
-	aggregation string
-	min         int64
-	max         int64
-	sum         int64
-	avg         int64
-	stdp        int64
-	stds        int64
-	count       int64
-	first       int64
-	last        int64
-	aggRange    int64
+	Map      map[string]interface{}
+	maxCount int64
+	min      int64
+	max      int64
+	sum      int64
+	avg      int64
+	stdp     int64
+	stds     int64
+	count    int64
+	first    int64
+	last     int64
+	aggRange int64
 }
 
 func (a ExTsAggregationArgs) New() *ExTsAggregationArgs {
