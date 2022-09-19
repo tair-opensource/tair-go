@@ -40,4 +40,23 @@ const (
 	ERROR    = "ERROR"
 	NOCREATE = "NOCREATE"
 	ITEMS    = "ITEMS"
+
+	UNCOMPRESSED = "UNCOMPRESSED"
+	DATA_ET      = "DATA_ET"
+	CHUNK_SIZE   = "CHUNK_SIZE"
+	LABELS       = "LABELS"
+
+	MAXCOUNT    = "MAXCOUNT"
+	WITHLABELS  = "WITHLABELS"
+	REVERSE     = "REVERSE"
+	FILTER      = "FILTER"
+	AGGREGATION = "AGGREGATION"
+	SUM         = "SUM"
+	AVG         = "AVG"
+	STDP        = "STD.P"
+	STDS        = "STD.S"
+	COUNT       = "COUNT"
+	FIRST       = "FIRST"
+	LAST        = "LAST"
+	RANGE       = "RANGE"
 )

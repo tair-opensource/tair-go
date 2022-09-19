@@ -57,13 +57,12 @@ type redisProcess struct {
 
 func redisOptions() *redis.Options {
 	return &redis.Options{
-		Addr:         redisAddr,
-		DB:           15,
-		DialTimeout:  10 * time.Second,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		MaxRetries:   -1,
-
+		Addr:               redisAddr,
+		DB:                 15,
+		DialTimeout:        10 * time.Second,
+		ReadTimeout:        30 * time.Second,
+		WriteTimeout:       30 * time.Second,
+		MaxRetries:         -1,
 		PoolSize:           10,
 		PoolTimeout:        30 * time.Second,
 		IdleTimeout:        time.Minute,
