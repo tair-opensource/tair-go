@@ -2,8 +2,11 @@ package tair
 
 import (
 	"context"
+
 	"github.com/go-redis/redis/v8"
 )
+
+var _ TairCmdable = (*TairClient)(nil)
 
 type TairClient struct {
 	*redis.Client

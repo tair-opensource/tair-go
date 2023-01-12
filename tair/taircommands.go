@@ -2,8 +2,9 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type tairCmdable func(ctx context.Context, cmd redis.Cmder) error

@@ -2,8 +2,10 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
+	"fmt"
 	"strings"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type ExZAddArgs struct {
@@ -61,10 +63,10 @@ type ExZAddMember struct {
 	Member string
 }
 
-func joinScoresToString(scores ...string) string {
+func joinScoresToString(scores ...float64) string {
 	var builder strings.Builder
 	for _, score := range scores {
-		builder.WriteString(score)
+		builder.WriteString(fmt.Sprintf("%f", score))
 		builder.WriteString("#")
 	}
 	strs := builder.String()
@@ -121,7 +123,7 @@ func (tc tairCmdable) exZAdd(ctx context.Context, key string, p *ExZAddArgs, mem
 	return cmd
 
 }
-func (tc tairCmdable) ExZAddManyScore(ctx context.Context, key string, member string, scores ...string) *redis.IntCmd {
+func (tc tairCmdable) ExZAddManyScore(ctx context.Context, key string, member string, scores ...float64) *redis.IntCmd {
 	args := make([]interface{}, 4)
 	args[0] = "exzadd"
 	args[1] = key
@@ -163,7 +165,7 @@ func (tc tairCmdable) ExZIncrBy(ctx context.Context, key string, score string, m
 	return cmd
 }
 
-func (tc tairCmdable) ExZIncrByManyScore(ctx context.Context, key string, member string, score ...string) *redis.StringSliceCmd {
+func (tc tairCmdable) ExZIncrByManyScore(ctx context.Context, key string, member string, score ...float64) *redis.StringSliceCmd {
 	a := make([]interface{}, 4)
 	a[0] = "exzincryby"
 	a[1] = key
