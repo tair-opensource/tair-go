@@ -270,6 +270,20 @@ func (tc tairCmdable) TftSearch(ctx context.Context, index string, request strin
 	return cmd
 }
 
+func (tc tairCmdable) TftSearchUseCache(ctx context.Context, index string, request string, useCache bool) *redis.StringCmd {
+	a := make([]interface{}, 3)
+	a[0] = "tft.search"
+	a[1] = index
+	a[2] = request
+	if useCache {
+		a[3] = []byte(`use_cache`)
+	}
+
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
 func (tc tairCmdable) TftExists(ctx context.Context, index string, docId string) *redis.IntCmd {
 	a := make([]interface{}, 3)
 	a[0] = "tft.exists"

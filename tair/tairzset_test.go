@@ -1,10 +1,11 @@
 package tair_test
 
 import (
+	"testing"
+
 	"github.com/alibaba/tair-go/tair"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type TairZsetTestSuite struct {
@@ -44,15 +45,15 @@ func (suite *TairZsetTestSuite) TestExZAdd() {
 }
 
 func (suite *TairZsetTestSuite) TestExZAddManyScore() {
-	res, err := suite.tairClient.ExZAddManyScore(ctx, "k1", "a", "32", "21", "16").Result()
+	res, err := suite.tairClient.ExZAddManyScore(ctx, "k1", "a", 32, 21, 16).Result()
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), res, int64(1))
 
-	res, err = suite.tairClient.ExZAddManyScore(ctx, "k1", "d", "14", "4", "16").Result()
+	res, err = suite.tairClient.ExZAddManyScore(ctx, "k1", "d", 14, 4, 16).Result()
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), res, int64(1))
 
-	res, err = suite.tairClient.ExZAddManyScore(ctx, "k1", "c", "20", "7", "12").Result()
+	res, err = suite.tairClient.ExZAddManyScore(ctx, "k1", "c", 20, 7, 12).Result()
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), res, int64(1))
 

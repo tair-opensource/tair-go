@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
-	"strconv"
 )
 
 var ctx = context.Background()
@@ -24,7 +24,7 @@ type LeaderBoard struct {
 	// field
 }
 
-func (l *LeaderBoard) addUser(key, member string, scores ...string) bool {
+func (l *LeaderBoard) addUser(key, member string, scores ...float64) bool {
 	_, err := tairClient.ExZAddManyScore(ctx, key, member, scores...).Result()
 	if err != nil {
 		// process err
@@ -48,9 +48,9 @@ func main() {
 	key := "LeaderBoard"
 	target := LeaderBoard{}
 	// add three user
-	target.addUser(key, "user1", strconv.Itoa(20), strconv.Itoa(10), strconv.Itoa(30))
-	target.addUser(key, "user2", strconv.Itoa(20), strconv.Itoa(15), strconv.Itoa(10))
-	target.addUser(key, "user3", strconv.Itoa(30), strconv.Itoa(10), strconv.Itoa(20))
+	target.addUser(key, "user1", 20, 10, 30)
+	target.addUser(key, "user2", 20, 15, 10)
+	target.addUser(key, "user3", 30, 10, 20)
 	// get top 2
 	fmt.Println(target.top(key, 0, 1))
 }

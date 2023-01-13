@@ -6,6 +6,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+var _ TairCmdable = (*TairClusterClient)(nil)
+
 type TairClusterClient struct {
 	*redis.ClusterClient
 	tairCmdable
