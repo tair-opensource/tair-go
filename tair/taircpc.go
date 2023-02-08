@@ -2,9 +2,10 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"strconv"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type CpcData struct {
@@ -164,10 +165,10 @@ func (a *CpcUpdateArgs) GetArgs() []interface{} {
 		args = append(args, PXAT, a.pxAt.Unix())
 	}
 	if _, ok := a.Set[EX]; ok {
-		args = append(args, EX, a.ex)
+		args = append(args, EX, toSec(a.ex))
 	}
 	if _, ok := a.Set[PX]; ok {
-		args = append(args, PX, a.px)
+		args = append(args, PX, toMs(a.px))
 	}
 	if _, ok := a.Set[WIN]; ok {
 		args = append(args, WIN, a.winSize)

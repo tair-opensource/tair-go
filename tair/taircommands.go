@@ -160,3 +160,17 @@ type TairCmdable interface {
 	BfInsert(ctx context.Context, key string, bfInsertArgs *BfInsertArgs, items ...string) *redis.BoolSliceCmd
 	BfDebug(ctx context.Context, key string) *redis.StringSliceCmd
 }
+
+func toMs(dur time.Duration) int64 {
+	if dur > 0 && dur < time.Millisecond {
+		return 1
+	}
+	return int64(dur / time.Millisecond)
+}
+
+func toSec(dur time.Duration) int64 {
+	if dur > 0 && dur < time.Second {
+		return 1
+	}
+	return int64(dur / time.Second)
+}
