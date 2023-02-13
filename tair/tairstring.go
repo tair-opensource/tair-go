@@ -2,8 +2,9 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type ExSetArgs struct {
@@ -96,10 +97,10 @@ func (a *ExSetArgs) GetArgs() []interface{} {
 		args = append(args, NX)
 	}
 	if _, ok := a.Set[EX]; ok {
-		args = append(args, EX, a.ex)
+		args = append(args, EX, toSec(a.ex))
 	}
 	if _, ok := a.Set[PX]; ok {
-		args = append(args, PX, a.px)
+		args = append(args, PX, toMs(a.px))
 	}
 	if _, ok := a.Set[EXAT]; ok {
 		args = append(args, EXAT, a.exAt.Unix())
@@ -176,10 +177,10 @@ func (a *CasArgs) GetArgs() []interface{} {
 		args = append(args, PXAT, a.pxAt.Unix())
 	}
 	if _, ok := a.Set[EX]; ok {
-		args = append(args, EX, a.ex)
+		args = append(args, EX, toSec(a.ex))
 	}
 	if _, ok := a.Set[PX]; ok {
-		args = append(args, PX, a.px)
+		args = append(args, PX, toMs(a.px))
 	}
 	if _, ok := a.Set[KEEPTTL]; ok {
 		args = append(args, KEEPTTL)
@@ -297,10 +298,10 @@ func (a ExIncrByArgs) GetArgs() []interface{} {
 		args = append(args, NX)
 	}
 	if _, ok := a.Set[EX]; ok {
-		args = append(args, EX, a.ex)
+		args = append(args, EX, toSec(a.ex))
 	}
 	if _, ok := a.Set[PX]; ok {
-		args = append(args, PX, a.px)
+		args = append(args, PX, toMs(a.px))
 	}
 	if _, ok := a.Set[EXAT]; ok {
 		args = append(args, EXAT, a.exAt.Unix())

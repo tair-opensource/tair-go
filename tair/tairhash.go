@@ -2,8 +2,9 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type ExHSetArgs struct {
@@ -79,10 +80,10 @@ func (a *ExHSetArgs) GetArgs() []interface{} {
 		args = append(args, NX)
 	}
 	if _, ok := a.Set[EX]; ok {
-		args = append(args, EX, a.ex)
+		args = append(args, EX, toSec(a.ex))
 	}
 	if _, ok := a.Set[PX]; ok {
-		args = append(args, PX, a.px)
+		args = append(args, PX, toMs(a.px))
 	}
 	if _, ok := a.Set[EXAT]; ok {
 		args = append(args, EXAT, a.exAt.Unix())
@@ -224,10 +225,10 @@ func (a *ExHIncrArgs) KeepTTL() *ExHIncrArgs {
 func (a ExHIncrArgs) GetArgs() []interface{} {
 	args := make([]interface{}, 0)
 	if _, ok := a.Set[EX]; ok {
-		args = append(args, EX, a.ex)
+		args = append(args, EX, toSec(a.ex))
 	}
 	if _, ok := a.Set[PX]; ok {
-		args = append(args, PX, a.px)
+		args = append(args, PX, toMs(a.px))
 	}
 	if _, ok := a.Set[EXAT]; ok {
 		args = append(args, EXAT, a.exAt.Unix())
