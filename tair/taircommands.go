@@ -159,6 +159,9 @@ type TairCmdable interface {
 	BfMExists(ctx context.Context, key string, items ...string) *redis.BoolSliceCmd
 	BfInsert(ctx context.Context, key string, bfInsertArgs *BfInsertArgs, items ...string) *redis.BoolSliceCmd
 	BfDebug(ctx context.Context, key string) *redis.StringSliceCmd
+	// TairPipeline
+	TairPipeline() TairPipeline
+	TairPipelined(ctx context.Context, fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
 }
 
 func toMs(dur time.Duration) int64 {
