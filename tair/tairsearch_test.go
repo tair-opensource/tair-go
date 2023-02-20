@@ -50,7 +50,7 @@ func (suite *TairSearchTestSuite) TestTftUpdateIndex() {
 	assert.NoError(suite.T(), err4)
 	assert.Equal(suite.T(), result4, "{\"tftkey\":{\"mappings\":{\"_source\":{\"enabled\":true,\"excludes\":[],\"includes\":[]},\"dynamic\":\"false\",\"properties\":{\"f0\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"},\"f1\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"}}},\"settings\":{}}}")
 
-	a := tair.TftGetIndexArgs{}.New().Settings()
+	a := tair.TftIndexArgs{}.New().Settings()
 	result5, err5 := suite.tairClient.TftGetIndexArgs(ctx, "tftkey", a).Result()
 	assert.NoError(suite.T(), err5)
 	assert.Equal(suite.T(), result5, "{\"tftkey\":{\"settings\":{}}}")

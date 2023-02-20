@@ -104,16 +104,16 @@ func (a *TftScanArgs) Count(count int64) *TftScanArgs {
 	return a
 }
 
-type TftGetIndexArgs struct {
+type TftIndexArgs struct {
 	arg
 }
 
-func (a TftGetIndexArgs) New() *TftGetIndexArgs {
+func (a TftIndexArgs) New() *TftIndexArgs {
 	a.Set = make(map[string]bool)
 	return &a
 }
 
-func (a *TftGetIndexArgs) GetArgs() []interface{} {
+func (a *TftIndexArgs) GetArgs() []interface{} {
 	args := make([]interface{}, 0)
 	if mappings, ok := a.Set[ProtoMappings.String()]; ok && mappings {
 		args = append(args, ProtoMappings.String())
@@ -125,13 +125,13 @@ func (a *TftGetIndexArgs) GetArgs() []interface{} {
 	return args
 }
 
-func (a *TftGetIndexArgs) Mappings() *TftGetIndexArgs {
+func (a *TftIndexArgs) Mappings() *TftIndexArgs {
 	a.Set[ProtoMappings.String()] = true
 	a.Set[ProtoSettings.String()] = false
 	return a
 }
 
-func (a *TftGetIndexArgs) Settings() *TftGetIndexArgs {
+func (a *TftIndexArgs) Settings() *TftIndexArgs {
 	a.Set[ProtoMappings.String()] = false
 	a.Set[ProtoSettings.String()] = true
 	return a
@@ -187,7 +187,7 @@ func (tc tairCmdable) TftGetIndex(ctx context.Context, index string) *redis.Stri
 	return cmd
 }
 
-func (tc tairCmdable) TftGetIndexArgs(ctx context.Context, index string, args *TftGetIndexArgs) *redis.StringCmd {
+func (tc tairCmdable) TftGetIndexArgs(ctx context.Context, index string, args *TftIndexArgs) *redis.StringCmd {
 	a := make([]interface{}, 2)
 	a[0] = "tft.getindex"
 	a[1] = index
@@ -332,7 +332,7 @@ func (tc tairCmdable) TftSearchUseCache(ctx context.Context, index string, reque
 	a[1] = index
 	a[2] = request
 	if useCache {
-		a[3] = []byte(`use_cache`)
+		a = append(a, "use_cache")
 	}
 	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)

@@ -70,7 +70,7 @@ type TairCmdable interface {
 	TftUpdateIndex(ctx context.Context, index, request string) *redis.StringCmd
 	TftGetIndexMappings(ctx context.Context, index string) *redis.StringCmd
 	TftGetIndex(ctx context.Context, index string) *redis.StringCmd
-	TftGetIndexArgs(ctx context.Context, index string, args *TftGetIndexArgs)
+	TftGetIndexArgs(ctx context.Context, index string, args *TftIndexArgs) *redis.StringCmd
 	TftAddDoc(ctx context.Context, index string, request string) *redis.StringCmd
 	TftAddDocWithId(ctx context.Context, index string, request string, docId string) *redis.StringCmd
 	TftMAddDoc(ctx context.Context, index string, docs map[string]string) *redis.StringCmd
