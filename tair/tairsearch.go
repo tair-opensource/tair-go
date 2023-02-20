@@ -12,6 +12,8 @@ const (
 	NONE protocolType = iota
 	ProtoMatch
 	ProtoCount
+	ProtoMappings
+	ProtoSettings
 )
 
 func (p protocolType) String() string {
@@ -22,6 +24,10 @@ func (p protocolType) String() string {
 		return "Match"
 	case ProtoCount:
 		return "Count"
+	case ProtoMappings:
+		return "mappings"
+	case ProtoSettings:
+		return "settings"
 	default:
 		return "NA"
 	}
@@ -98,6 +104,39 @@ func (a *TftScanArgs) Count(count int64) *TftScanArgs {
 	return a
 }
 
+type TftGetIndexArgs struct {
+	arg
+}
+
+func (a TftGetIndexArgs) New() *TftGetIndexArgs {
+	a.Set = make(map[string]bool)
+	return &a
+}
+
+func (a *TftGetIndexArgs) GetArgs() []interface{} {
+	args := make([]interface{}, 0)
+	if mappings, ok := a.Set[ProtoMappings.String()]; ok && mappings {
+		args = append(args, ProtoMappings.String())
+		return args
+	}
+	if settings, ok := a.Set[ProtoSettings.String()]; ok && settings {
+		args = append(args, ProtoSettings.String())
+	}
+	return args
+}
+
+func (a *TftGetIndexArgs) Mappings() *TftGetIndexArgs {
+	a.Set[ProtoMappings.String()] = true
+	a.Set[ProtoSettings.String()] = false
+	return a
+}
+
+func (a *TftGetIndexArgs) Settings() *TftGetIndexArgs {
+	a.Set[ProtoMappings.String()] = false
+	a.Set[ProtoSettings.String()] = true
+	return a
+}
+
 func (tc tairCmdable) TftMappingIndex(ctx context.Context, index, request string) *redis.StringCmd {
 	a := make([]interface{}, 3)
 	a[0] = "tft.mappingindex"
@@ -128,11 +167,31 @@ func (tc tairCmdable) TftUpdateIndex(ctx context.Context, index, request string)
 	return cmd
 }
 
+// Deprecated: Use TftGetIndexArgs instead.
 func (tc tairCmdable) TftGetIndexMappings(ctx context.Context, index string) *redis.StringCmd {
 	a := make([]interface{}, 3)
 	a[0] = "tft.getindex"
 	a[1] = index
 	a[2] = "mappings"
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
+func (tc tairCmdable) TftGetIndex(ctx context.Context, index string) *redis.StringCmd {
+	a := make([]interface{}, 2)
+	a[0] = "tft.getindex"
+	a[1] = index
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
+func (tc tairCmdable) TftGetIndexArgs(ctx context.Context, index string, args *TftGetIndexArgs) *redis.StringCmd {
+	a := make([]interface{}, 2)
+	a[0] = "tft.getindex"
+	a[1] = index
+	a = append(a, args.GetArgs()...)
 	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
@@ -248,13 +307,10 @@ func (tc tairCmdable) TftDelDoc(ctx context.Context, index string, docId ...stri
 	return cmd
 }
 
-func (tc tairCmdable) TftDelAll(ctx context.Context, index string, docId ...string) *redis.StringCmd {
+func (tc tairCmdable) TftDelAll(ctx context.Context, index string) *redis.StringCmd {
 	a := make([]interface{}, 2)
 	a[0] = "tft.delall"
 	a[1] = index
-	for _, d := range docId {
-		a = append(a, d)
-	}
 	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
@@ -278,7 +334,19 @@ func (tc tairCmdable) TftSearchUseCache(ctx context.Context, index string, reque
 	if useCache {
 		a[3] = []byte(`use_cache`)
 	}
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
 
+func (tc tairCmdable) TftMSearch(ctx context.Context, indexCount int64, request string, index ...string) *redis.StringCmd {
+	a := make([]interface{}, 2)
+	a[0] = "tft.msearch"
+	a[1] = indexCount
+	for _, d := range index {
+		a = append(a, d)
+	}
+	a = append(a, request)
 	cmd := redis.NewStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd

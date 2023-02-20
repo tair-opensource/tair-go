@@ -45,6 +45,21 @@ func (suite *TairSearchTestSuite) TestTftUpdateIndex() {
 	result3, err3 := suite.tairClient.TftGetIndexMappings(ctx, "tftkey").Result()
 	assert.NoError(suite.T(), err3)
 	assert.Equal(suite.T(), result3, "{\"tftkey\":{\"mappings\":{\"_source\":{\"enabled\":true,\"excludes\":[],\"includes\":[]},\"dynamic\":\"false\",\"properties\":{\"f0\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"},\"f1\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"}}}}}")
+
+	result4, err4 := suite.tairClient.TftGetIndex(ctx, "tftkey").Result()
+	assert.NoError(suite.T(), err4)
+	assert.Equal(suite.T(), result4, "{\"tftkey\":{\"mappings\":{\"_source\":{\"enabled\":true,\"excludes\":[],\"includes\":[]},\"dynamic\":\"false\",\"properties\":{\"f0\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"},\"f1\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"}}},\"settings\":{}}}")
+
+	a := tair.TftGetIndexArgs{}.New().Settings()
+	result5, err5 := suite.tairClient.TftGetIndexArgs(ctx, "tftkey", a).Result()
+	assert.NoError(suite.T(), err5)
+	assert.Equal(suite.T(), result5, "{\"tftkey\":{\"settings\":{}}}")
+
+	a.Mappings()
+	result6, err6 := suite.tairClient.TftGetIndexArgs(ctx, "tftkey", a).Result()
+	assert.NoError(suite.T(), err6)
+	assert.Equal(suite.T(), result6, "{\"tftkey\":{\"mappings\":{\"_source\":{\"enabled\":true,\"excludes\":[],\"includes\":[]},\"dynamic\":\"false\",\"properties\":{\"f0\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"},\"f1\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"}}}}}")
+
 }
 
 func (suite *TairSearchTestSuite) TestTftAddDoc() {
@@ -58,6 +73,10 @@ func (suite *TairSearchTestSuite) TestTftAddDoc() {
 	result1, err1 := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"match\":{\"f1\":\"3\"}}}").Result()
 	assert.NoError(suite.T(), err1)
 	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.223144,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
+
+	result, err := suite.tairClient.TftSearchUseCache(ctx, "tftkey", "{\"query\":{\"match\":{\"f1\":\"3\"}}}", true).Result()
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), result, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.223144,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
 
 	result2, err2 := suite.tairClient.TftGetDoc(ctx, "tftkey", "3").Result()
 	assert.NoError(suite.T(), err2)
@@ -74,6 +93,22 @@ func (suite *TairSearchTestSuite) TestTftAddDoc() {
 	result4, err4 := suite.tairClient.TftGetIndexMappings(ctx, "tftkey").Result()
 	assert.NoError(suite.T(), err4)
 	assert.Equal(suite.T(), result4, "{\"tftkey\":{\"mappings\":{\"_source\":{\"enabled\":true,\"excludes\":[],\"includes\":[]},\"dynamic\":\"false\",\"properties\":{\"f0\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"},\"f1\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"}}}}}")
+
+}
+
+func (suite *TairSearchTestSuite) TestTftMSearch() {
+	suite.tairClient.TftCreateIndex(ctx, "tftkey1", "{\"mappings\":{\"dynamic\":\"false\",\"properties\":{\"f0\":{\"type\":\"text\"},\"f1\":{\"type\":\"text\"}}}}")
+	suite.tairClient.TftCreateIndex(ctx, "tftkey2", "{\"mappings\":{\"dynamic\":\"false\",\"properties\":{\"f0\":{\"type\":\"text\"},\"f1\":{\"type\":\"text\"}}}}")
+	suite.tairClient.TftCreateIndex(ctx, "tftkey3", "{\"mappings\":{\"dynamic\":\"false\",\"properties\":{\"f0\":{\"type\":\"text\"},\"f1\":{\"type\":\"text\"}}}}")
+	suite.tairClient.TftAddDocWithId(ctx, "tftkey1", "{\"f0\":\"v0\",\"f1\":\"3\"}", "1")
+	suite.tairClient.TftAddDocWithId(ctx, "tftkey2", "{\"f0\":\"v1\",\"f1\":\"3\"}", "2")
+	suite.tairClient.TftAddDocWithId(ctx, "tftkey3", "{\"f0\":\"v3\",\"f1\":\"3\"}", "3")
+	suite.tairClient.TftAddDocWithId(ctx, "tftkey1", "{\"f0\":\"v3\",\"f1\":\"4\"}", "4")
+	suite.tairClient.TftAddDocWithId(ctx, "tftkey2", "{\"f0\":\"v3\",\"f1\":\"5\"}", "5")
+
+	result1, err1 := suite.tairClient.TftMSearch(ctx, 3, "{\"query\":{\"match\":{\"f1\":\"3\"}}}", "tftkey1", "tftkey2", "tftkey3").Result()
+	assert.NoError(suite.T(), err1)
+	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey1\",\"_score\":1.0,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey2\",\"_score\":1.0,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey3\",\"_score\":0.306853,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.0,\"total\":{\"relation\":\"eq\",\"value\":3}},\"aux_info\":{\"index_crc64\":52600736426816810}}")
 
 }
 
@@ -95,7 +130,7 @@ func (suite *TairSearchTestSuite) TestTftUpdateDocField() {
 	suite.tairClient.TftUpdateDocField(ctx, "tftkey", "1", "{\"f1\":\"mysql is a dbms\"}")
 	result4, err4 := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"term\":{\"f1\":\"mysql\"}}}").Result()
 	assert.NoError(suite.T(), err4)
-	assert.Equal(suite.T(), result4, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.191783,\"_source\":{\"f0\":\"redis is a nosql database\",\"f1\":\"mysql is a dbms\"}}],\"max_score\":0.191783,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
+	assert.Equal(suite.T(), result4, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.191783,\"_source\":{\"f1\":\"mysql is a dbms\",\"f0\":\"redis is a nosql database\"}}],\"max_score\":0.191783,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
 
 }
 
@@ -110,7 +145,7 @@ func (suite *TairSearchTestSuite) TestTftIncrLongDocField() {
 
 	_, err2 := suite.tairClient.TftIncrLongDocField(ctx, "tftkey", "1", "f0", 1).Result()
 	assert.Error(suite.T(), err2)
-	assert.Contains(suite.T(), err2, "failed to parse field")
+	assert.Contains(suite.T(), err2, "ERR incrlongdocfield only supports field of int or long type")
 
 	suite.tairClient.Del(ctx, "tftkey")
 
@@ -143,7 +178,7 @@ func (suite *TairSearchTestSuite) TestTftIncrFloatDocField() {
 
 	_, err3 := suite.tairClient.TftIncrFloatDocField(ctx, "tftkey", "1", "f0", 1.1).Result()
 	assert.Error(suite.T(), err3)
-	assert.Contains(suite.T(), err3, "failed to parse field")
+	assert.Contains(suite.T(), err3, "ERR incrfloatdocfield only supports field of double type")
 
 	suite.tairClient.Del(ctx, "tftkey")
 
