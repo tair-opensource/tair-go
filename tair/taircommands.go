@@ -69,6 +69,8 @@ type TairCmdable interface {
 	TftCreateIndex(ctx context.Context, index, request string) *redis.StringCmd
 	TftUpdateIndex(ctx context.Context, index, request string) *redis.StringCmd
 	TftGetIndexMappings(ctx context.Context, index string) *redis.StringCmd
+	TftGetIndex(ctx context.Context, index string) *redis.StringCmd
+	TftGetIndexSettings(ctx context.Context, index string) *redis.StringCmd
 	TftAddDoc(ctx context.Context, index string, request string) *redis.StringCmd
 	TftAddDocWithId(ctx context.Context, index string, request string, docId string) *redis.StringCmd
 	TftMAddDoc(ctx context.Context, index string, docs map[string]string) *redis.StringCmd
@@ -77,11 +79,11 @@ type TairCmdable interface {
 	TftIncrFloatDocField(ctx context.Context, index, docId, docContent string, value float64) *redis.FloatCmd
 	TftDelDocField(ctx context.Context, index, docId string, field ...string) *redis.IntCmd
 	TftGetDoc(ctx context.Context, index, docId string) *redis.StringCmd
-	TftGetDocWithFilter(ctx context.Context, index, docId, request string) *redis.StringCmd
 	TftDelDoc(ctx context.Context, index string, docId ...string) *redis.StringCmd
-	TftDelAll(ctx context.Context, index string, docId ...string) *redis.StringCmd
+	TftDelAll(ctx context.Context, index string) *redis.StringCmd
 	TftSearch(ctx context.Context, index string, request string) *redis.StringCmd
 	TftSearchUseCache(ctx context.Context, index string, request string, useCache bool) *redis.StringCmd
+	TftMSearch(ctx context.Context, indexCount int64, request string, index ...string) *redis.StringCmd
 	TftExists(ctx context.Context, index string, docId string) *redis.IntCmd
 	TftDocNum(ctx context.Context, index string) *redis.IntCmd
 	TftScanDocId(ctx context.Context, index string, cursor string) *redis.SliceCmd
