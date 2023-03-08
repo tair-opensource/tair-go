@@ -30,7 +30,7 @@ An example of TairString is as follows:
 go.mod
 ```
 require (
-	github.com/alibaba/tair-go v1.1.3
+	github.com/alibaba/tair-go vx.x.x
 )
 ```
 
