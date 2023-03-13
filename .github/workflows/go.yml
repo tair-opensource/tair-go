@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  test-ubuntu-with-redis-62:
+  test-ubuntu-with-redis-7:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
           sudo apt-get install git
           git clone https://github.com/redis/redis
           cd redis
-          git checkout 6.2.0
+          git checkout 7.2.5
           make -j
 
       - name: clone and make tairhash
@@ -76,8 +76,8 @@ jobs:
 
       - name: Test
         run: |
-          go test -v ./... -run TestTairStringTestSuite/TestTairStringTestSuite
-          go test -v ./... -run TestTairStringTestSuite/TestTairHashTestSuite
-          go test -v ./... -run TestTairStringTestSuite/TestTairZsetTestSuite
+          go test -v ./... -run TestTairStringTestSuite
+          go test -v ./... -run TestTairHashTestSuite
+          go test -v ./... -run TestTairZsetTestSuite
           go test -v ./... -run TestTairPipelineTestSuite
 

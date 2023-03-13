@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 type tairCmdable func(ctx context.Context, cmd redis.Cmder) error
@@ -125,7 +125,7 @@ type TairCmdable interface {
 	ExHStrLen(ctx context.Context, key, field string) *redis.IntCmd
 	ExHKeys(ctx context.Context, key string) *redis.StringSliceCmd
 	ExHVals(ctx context.Context, key string) *redis.StringSliceCmd
-	ExHGetAll(ctx context.Context, key string) *redis.StringStringMapCmd
+	ExHGetAll(ctx context.Context, key string) *redis.MapStringStringCmd
 	ExHScan(ctx context.Context, key string, cursor string) *redis.SliceCmd
 	// TairRoaring
 	TrSetBit(ctx context.Context, key string, offset int64, value int64) *redis.IntCmd
