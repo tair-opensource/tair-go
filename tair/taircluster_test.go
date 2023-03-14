@@ -174,6 +174,38 @@ func (suite *TairZsetTestSuite) TestClusterExZAddParams() {
 	assert.Equal(suite.T(), res, int64(2))
 }
 
+func (suite *TairClusterTestSuite) TestClusterTFTAnalyzer() {
+	suite.tairClient.TftCreateIndex(ctx, "tftkey", "{\"mappings\":{\"properties\":{\"f0\":{\"type\":\"text\",\"analyzer\":\"my_analyzer\"}}},\"settings\":{\"analysis\":{\"analyzer\":{\"my_analyzer\":{\"type\":\"standard\"}}}}}")
+	text := "This is tair-go."
+	a1 := tair.TftAnalyzerArgs{}.New().Index("tftkey")
+	result1, err1 := suite.tairClient.TftAnalyzerWithArgs(ctx, "my_analyzer", text, a1).Result()
+	assert.NoError(suite.T(), err1)
+	result2, err2 := suite.tairClient.TftAnalyzer(ctx, "standard", text).Result()
+	assert.NoError(suite.T(), err2)
+	assert.Equal(suite.T(), result1, result2)
+
+	a2 := tair.TftAnalyzerArgs{}.New().ShowTime()
+	r3, err3 := suite.tairClient.TftAnalyzerWithArgs(ctx, "standard", text, a2).Result()
+	assert.NoError(suite.T(), err3)
+	assert.Contains(suite.T(), r3, "consuming time")
+}
+
+func (suite *TairClusterTestSuite) TestClusterftMSearch() {
+	suite.tairClient.TftCreateIndex(ctx, "{tftkey}1", "{\"mappings\":{\"dynamic\":\"false\",\"properties\":{\"f0\":{\"type\":\"text\"},\"f1\":{\"type\":\"text\"}}}}")
+	suite.tairClient.TftCreateIndex(ctx, "{tftkey}2", "{\"mappings\":{\"dynamic\":\"false\",\"properties\":{\"f0\":{\"type\":\"text\"},\"f1\":{\"type\":\"text\"}}}}")
+	suite.tairClient.TftCreateIndex(ctx, "{tftkey}3", "{\"mappings\":{\"dynamic\":\"false\",\"properties\":{\"f0\":{\"type\":\"text\"},\"f1\":{\"type\":\"text\"}}}}")
+	suite.tairClient.TftAddDocWithId(ctx, "{tftkey}1", "{\"f0\":\"v0\",\"f1\":\"3\"}", "1")
+	suite.tairClient.TftAddDocWithId(ctx, "{tftkey}2", "{\"f0\":\"v1\",\"f1\":\"3\"}", "2")
+	suite.tairClient.TftAddDocWithId(ctx, "{tftkey}3", "{\"f0\":\"v3\",\"f1\":\"3\"}", "3")
+	suite.tairClient.TftAddDocWithId(ctx, "{tftkey}1", "{\"f0\":\"v3\",\"f1\":\"4\"}", "4")
+	suite.tairClient.TftAddDocWithId(ctx, "{tftkey}2", "{\"f0\":\"v3\",\"f1\":\"5\"}", "5")
+
+	result1, err1 := suite.tairClient.TftMSearch(ctx, 3, "{\"query\":{\"match\":{\"f1\":\"3\"}}}", "{tftkey}1", "{tftkey}2", "{tftkey}3").Result()
+	assert.NoError(suite.T(), err1)
+	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"{tftkey}1\",\"_score\":1.0,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"{tftkey}2\",\"_score\":1.0,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"{tftkey}3\",\"_score\":0.306853,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.0,\"total\":{\"relation\":\"eq\",\"value\":3}},\"aux_info\":{\"index_crc64\":52600736426816810}}")
+
+}
+
 func TestTairClusterTestSuite(t *testing.T) {
 	suite.Run(t, new(TairClusterTestSuite))
 }

@@ -12,8 +12,8 @@ const (
 	NONE protocolType = iota
 	ProtoMatch
 	ProtoCount
-	ProtoMappings
-	ProtoSettings
+	ProtoIndex
+	ProtoShowTime
 )
 
 func (p protocolType) String() string {
@@ -24,6 +24,10 @@ func (p protocolType) String() string {
 		return "MATCH"
 	case ProtoCount:
 		return "COUNT"
+	case ProtoIndex:
+		return "INDEX"
+	case ProtoShowTime:
+		return "SHOW_TIME"
 	default:
 		return "NA"
 	}
@@ -97,6 +101,45 @@ func (a *TftScanArgs) Match(pattern string) *TftScanArgs {
 func (a *TftScanArgs) Count(count int64) *TftScanArgs {
 	a.Set[ProtoCount.String()] = true
 	a.count = count
+	return a
+}
+
+type TftAnalyzerArgs struct {
+	arg
+	index string
+}
+
+func (a TftAnalyzerArgs) New() *TftAnalyzerArgs {
+	a.Set = make(map[string]bool)
+	return &a
+}
+
+func (a *TftAnalyzerArgs) GetArgs() []interface{} {
+	args := make([]interface{}, 0)
+	if _, ok := a.Set[ProtoIndex.String()]; ok {
+		args = append(args, ProtoIndex.String(), a.index)
+	}
+	if _, ok := a.Set[ProtoShowTime.String()]; ok {
+		args = append(args, ProtoShowTime.String())
+	}
+	return args
+}
+
+func (a *TftAnalyzerArgs) HasIndex() bool {
+	if _, ok := a.Set[ProtoIndex.String()]; ok {
+		return true
+	}
+	return false
+}
+
+func (a *TftAnalyzerArgs) Index(index string) *TftAnalyzerArgs {
+	a.Set[ProtoIndex.String()] = true
+	a.index = index
+	return a
+}
+
+func (a *TftAnalyzerArgs) ShowTime() *TftAnalyzerArgs {
+	a.Set[ProtoShowTime.String()] = true
 	return a
 }
 
@@ -339,6 +382,30 @@ func (tc tairCmdable) TftScanDocIdArgs(ctx context.Context, index string, cursor
 	args[2] = cursor
 	args = append(args, a.GetArgs()...)
 	cmd := redis.NewSliceCmd(ctx, args...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
+func (tc tairCmdable) TftAnalyzer(ctx context.Context, analyzerName string, text string) *redis.StringCmd {
+	a := make([]interface{}, 3)
+	a[0] = "TFT.ANALYZER"
+	a[1] = analyzerName
+	a[2] = text
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
+func (tc tairCmdable) TftAnalyzerWithArgs(ctx context.Context, analyzerName string, text string, a *TftAnalyzerArgs) *redis.StringCmd {
+	args := make([]interface{}, 3)
+	args[0] = "TFT.ANALYZER"
+	args[1] = analyzerName
+	args[2] = text
+	args = append(args, a.GetArgs()...)
+	cmd := redis.NewStringCmd(ctx, args...)
+	if a.HasIndex() {
+		cmd.SetFirstKeyPos(4)
+	}
 	_ = tc(ctx, cmd)
 	return cmd
 }

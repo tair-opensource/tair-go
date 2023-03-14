@@ -345,6 +345,23 @@ func (suite *TairSearchTestSuite) TestTftScanDocIdWithMatch() {
 
 }
 
+func (suite *TairSearchTestSuite) TestTftAnalyzer() {
+	suite.tairClient.TftCreateIndex(ctx, "tftkey", "{\"mappings\":{\"properties\":{\"f0\":{\"type\":\"text\",\"analyzer\":\"my_analyzer\"}}},\"settings\":{\"analysis\":{\"analyzer\":{\"my_analyzer\":{\"type\":\"standard\"}}}}}")
+
+	text := "This is tair-go."
+	r1, err1 := suite.tairClient.TftAnalyzer(ctx, "standard", text).Result()
+	assert.NoError(suite.T(), err1)
+	a1 := tair.TftAnalyzerArgs{}.New().Index("tftkey")
+	r2, err2 := suite.tairClient.TftAnalyzerWithArgs(ctx, "my_analyzer", text, a1).Result()
+	assert.NoError(suite.T(), err2)
+	assert.Equal(suite.T(), r1, r2)
+
+	a2 := tair.TftAnalyzerArgs{}.New().ShowTime()
+	r3, err3 := suite.tairClient.TftAnalyzerWithArgs(ctx, "standard", text, a2).Result()
+	assert.NoError(suite.T(), err3)
+	assert.Contains(suite.T(), r3, "consuming time")
+}
+
 func (suite *TairSearchTestSuite) TestTftUnicode() {
 	suite.tairClient.TftMappingIndex(ctx, "tftkey", "{\"mappings\":{\"properties\":{\"f0\":{\"type\":\"text\",\"analyzer\":\"chinese\"}}}}")
 	r, e := suite.tairClient.TftGetIndexMappings(ctx, "tftkey").Result()
