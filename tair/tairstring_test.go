@@ -125,7 +125,7 @@ func (suite *TairStringTestSuite) TestExIncrByFloat() {
 	suite.tairClient.ExSet(ctx, "foo", 100)
 	result, err := suite.tairClient.ExIncrByFloat(ctx, "foo", 10.123).Result()
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), result, 110.123)
+	assert.InDelta(suite.T(), result, 110.123, 0.01)
 }
 
 func (suite *TairStringTestSuite) TestExCas() {

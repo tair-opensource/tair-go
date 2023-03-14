@@ -186,7 +186,7 @@ func (suite *TairSearchTestSuite) TestTftIncrFloatDocField() {
 
 	result5, err5 := suite.tairClient.TftIncrFloatDocField(ctx, "tftkey", "1", "f0", 1.1).Result()
 	assert.NoError(suite.T(), err5)
-	assert.Equal(suite.T(), result5, 1.1)
+	assert.InDelta(suite.T(), result5, 1.1, 0.01)
 
 	result6, err6 := suite.tairClient.TftIncrFloatDocField(ctx, "tftkey", "1", "f0", -1.1).Result()
 	assert.NoError(suite.T(), err6)

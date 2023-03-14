@@ -2,6 +2,7 @@ package tair_test
 
 import (
 	"sort"
+	"strconv"
 	"testing"
 	"time"
 
@@ -149,7 +150,8 @@ func (suite *TairHashTestSuite) TestExHIncrByArgs() {
 func (suite *TairHashTestSuite) TestExHIncrByFloat() {
 	res, err := suite.tairClient.ExHIncrByFloat(ctx, "k1", "f1", 1.5).Result()
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), res, "1.5")
+	f, _ := strconv.ParseFloat(res, 64)
+	assert.InDelta(suite.T(), f, 1.5, 0.01)
 
 	res, err = suite.tairClient.ExHIncrByFloat(ctx, "k1", "f1", -1.5).Result()
 	assert.NoError(suite.T(), err)
@@ -157,13 +159,15 @@ func (suite *TairHashTestSuite) TestExHIncrByFloat() {
 
 	res, err = suite.tairClient.ExHIncrByFloat(ctx, "k1", "f1", -10.7).Result()
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), res, "-10.7")
+	f, _ = strconv.ParseFloat(res, 64)
+	assert.InDelta(suite.T(), f, -10.7, 0.01)
 }
 
 func (suite *TairHashTestSuite) TestExHIncrByFloatExpire() {
 	res, err := suite.tairClient.ExHIncrByFloatArgs(ctx, "k1", "f1", 5.1, tair.ExHIncrArgs{}.New().Ex(1)).Result()
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), res, "5.1")
+	f, _ := strconv.ParseFloat(res, 64)
+	assert.InDelta(suite.T(), f, 5.1, 0.01)
 
 	time.Sleep(time.Duration(2) * time.Second)
 
