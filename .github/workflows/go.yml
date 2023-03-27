@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  test-ubuntu-with-redis-62:
+  test-ubuntu-with-redis-7:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
           sudo apt-get install git
           git clone https://github.com/redis/redis
           cd redis
-          git checkout 6.2.0
+          git checkout 7.0.9
           make -j
 
       - name: clone and make tairhash

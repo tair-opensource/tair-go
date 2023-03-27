@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 type ExHSetArgs struct {
@@ -549,11 +549,11 @@ func (tc tairCmdable) ExHVals(ctx context.Context, key string) *redis.StringSlic
 	return cmd
 }
 
-func (tc tairCmdable) ExHGetAll(ctx context.Context, key string) *redis.StringStringMapCmd {
+func (tc tairCmdable) ExHGetAll(ctx context.Context, key string) *redis.MapStringStringCmd {
 	a := make([]interface{}, 2)
 	a[0] = "exhgetall"
 	a[1] = key
-	cmd := redis.NewStringStringMapCmd(ctx, a...)
+	cmd := redis.NewMapStringStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
 }

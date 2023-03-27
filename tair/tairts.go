@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 var MENUS = [...]string{MIN, MAX, SUM, AVG, STDP, STDS, COUNT, FIRST, LAST, RANGE}

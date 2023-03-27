@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/alibaba/tair-go/tair"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -57,16 +57,15 @@ type redisProcess struct {
 
 func redisOptions() *redis.Options {
 	return &redis.Options{
-		Addr:               redisAddr,
-		DB:                 15,
-		DialTimeout:        10 * time.Second,
-		ReadTimeout:        30 * time.Second,
-		WriteTimeout:       30 * time.Second,
-		MaxRetries:         -1,
-		PoolSize:           10,
-		PoolTimeout:        30 * time.Second,
-		IdleTimeout:        time.Minute,
-		IdleCheckFrequency: 100 * time.Millisecond,
+		Addr:            redisAddr,
+		DB:              15,
+		DialTimeout:     10 * time.Second,
+		ReadTimeout:     30 * time.Second,
+		WriteTimeout:    30 * time.Second,
+		MaxRetries:      -1,
+		PoolSize:        10,
+		PoolTimeout:     30 * time.Second,
+		ConnMaxIdleTime: time.Minute,
 	}
 }
 
@@ -78,10 +77,9 @@ func redisClusterOptions() *redis.ClusterOptions {
 
 		MaxRedirects: 8,
 
-		PoolSize:           10,
-		PoolTimeout:        30 * time.Second,
-		IdleTimeout:        time.Minute,
-		IdleCheckFrequency: 100 * time.Millisecond,
+		PoolSize:        10,
+		PoolTimeout:     30 * time.Second,
+		ConnMaxIdleTime: time.Minute,
 	}
 }
 
