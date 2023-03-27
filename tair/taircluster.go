@@ -30,3 +30,15 @@ func NewTairClusterClient(opt *TairClusterOptions) *TairClusterClient {
 	tc.tairCmdable = tc.Process
 	return tc
 }
+
+func (t *TairClusterClient) TairPipeline() TairPipeline {
+	pipe := TairPipeline{
+		Pipeline: t.ClusterClient.Pipeline().(*redis.Pipeline),
+	}
+	pipe.init()
+	return pipe
+}
+
+func (t *TairClusterClient) TairPipelined(ctx context.Context, fn func(redis.Pipeliner) error) ([]redis.Cmder, error) {
+	return t.ClusterClient.Pipeline().Pipelined(ctx, fn)
+}
