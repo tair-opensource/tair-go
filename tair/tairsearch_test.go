@@ -1,6 +1,7 @@
 package tair_test
 
 import (
+	"encoding/json"
 	"github.com/alibaba/tair-go/tair"
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -92,6 +93,12 @@ func (suite *TairSearchTestSuite) TestTftAddDoc() {
 	assert.NoError(suite.T(), err4)
 	assert.Equal(suite.T(), result4, "{\"tftkey\":{\"mappings\":{\"_source\":{\"enabled\":true,\"excludes\":[],\"includes\":[]},\"dynamic\":\"false\",\"properties\":{\"f0\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"},\"f1\":{\"boost\":1.0,\"enabled\":true,\"ignore_above\":-1,\"index\":true,\"similarity\":\"classic\",\"type\":\"text\"}}}}}")
 
+	result5, err5 := suite.tairClient.TftExplaincost(ctx, "tftkey", "{\"query\":{\"match\":{\"f1\":\"3\"}}}").Result()
+	assert.NoError(suite.T(), err5)
+	var results map[string]interface{}
+	json.Unmarshal([]byte(result5), &results)
+	_, ok := results["QUERY_COST"]
+	assert.Equal(suite.T(), ok, true)
 }
 
 func (suite *TairSearchTestSuite) TestTftMSearch() {

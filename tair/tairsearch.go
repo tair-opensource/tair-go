@@ -410,6 +410,16 @@ func (tc tairCmdable) TftAnalyzerWithArgs(ctx context.Context, analyzerName stri
 	return cmd
 }
 
+func (tc tairCmdable) TftExplaincost(ctx context.Context, index string, request string) *redis.StringCmd {
+	a := make([]interface{}, 3)
+	a[0] = "TFT.EXPLAINCOST"
+	a[1] = index
+	a[2] = request
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
 func (tc tairCmdable) TftAddSug(ctx context.Context, index string, textWeight map[string]int64) *redis.IntCmd {
 	args := make([]interface{}, 2)
 	args[0] = "TFT.ADDSUG"
