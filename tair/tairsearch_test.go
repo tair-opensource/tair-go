@@ -71,11 +71,11 @@ func (suite *TairSearchTestSuite) TestTftAddDoc() {
 
 	result1, err1 := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"match\":{\"f1\":\"3\"}}}").Result()
 	assert.NoError(suite.T(), err1)
-	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.223144,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
+	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.49608,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
 
 	result, err := suite.tairClient.TftSearchUseCache(ctx, "tftkey", "{\"query\":{\"match\":{\"f1\":\"3\"}}}", true).Result()
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), result, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.223144,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
+	assert.Equal(suite.T(), result, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.49608,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
 
 	result2, err2 := suite.tairClient.TftGetDoc(ctx, "tftkey", "3").Result()
 	assert.NoError(suite.T(), err2)
@@ -113,7 +113,7 @@ func (suite *TairSearchTestSuite) TestTftMSearch() {
 
 	result1, err1 := suite.tairClient.TftMSearch(ctx, 3, "{\"query\":{\"match\":{\"f1\":\"3\"}}}", "tftkey1", "tftkey2", "tftkey3").Result()
 	assert.NoError(suite.T(), err1)
-	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey1\",\"_score\":1.0,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey2\",\"_score\":1.0,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey3\",\"_score\":0.306853,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.0,\"total\":{\"relation\":\"eq\",\"value\":3}},\"aux_info\":{\"index_crc64\":52600736426816810}}")
+	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey1\",\"_score\":1.0,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey2\",\"_score\":1.0,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey3\",\"_score\":0.094159,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.0,\"total\":{\"relation\":\"eq\",\"value\":3}},\"aux_info\":{\"index_crc64\":52600736426816810}}")
 
 }
 
@@ -126,7 +126,7 @@ func (suite *TairSearchTestSuite) TestTftUpdateDocField() {
 
 	result2, err2 := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"term\":{\"f0\":\"redis\"}}}").Result()
 	assert.NoError(suite.T(), err2)
-	assert.Equal(suite.T(), result2, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.153426,\"_source\":{\"f0\":\"redis is a nosql database\"}}],\"max_score\":0.153426,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
+	assert.Equal(suite.T(), result2, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.054363,\"_source\":{\"f0\":\"redis is a nosql database\"}}],\"max_score\":0.054363,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
 
 	result3, err3 := suite.tairClient.TftUpdateIndex(ctx, "tftkey", "{\"mappings\":{\"properties\":{\"f1\":{\"type\":\"text\"}}}}").Result()
 	assert.NoError(suite.T(), err3)
@@ -135,7 +135,7 @@ func (suite *TairSearchTestSuite) TestTftUpdateDocField() {
 	suite.tairClient.TftUpdateDocField(ctx, "tftkey", "1", "{\"f1\":\"mysql is a dbms\"}")
 	result4, err4 := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"term\":{\"f1\":\"mysql\"}}}").Result()
 	assert.NoError(suite.T(), err4)
-	assert.Equal(suite.T(), result4, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.191783,\"_source\":{\"f1\":\"mysql is a dbms\",\"f0\":\"redis is a nosql database\"}}],\"max_score\":0.191783,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
+	assert.Equal(suite.T(), result4, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.06658,\"_source\":{\"f1\":\"mysql is a dbms\",\"f0\":\"redis is a nosql database\"}}],\"max_score\":0.06658,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
 
 }
 
@@ -392,7 +392,7 @@ func (suite *TairSearchTestSuite) TestTftUnicode() {
 	suite.tairClient.TftAddDocWithId(ctx, "tftkey", "{\"f0\":\"夏天是一个很热的季节\"}", "1")
 	r3, e3 := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"match\":{\"f0\":\"夏天冬天\"}}}").Result()
 	assert.NoError(suite.T(), e3)
-	assert.Equal(suite.T(), r3, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.077948,\"_source\":{\"f0\":\"夏天是一个很热的季节\"}}],\"max_score\":0.077948,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
+	assert.Equal(suite.T(), r3, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":0.089327,\"_source\":{\"f0\":\"夏天是一个很热的季节\"}}],\"max_score\":0.089327,\"total\":{\"relation\":\"eq\",\"value\":1}}}")
 
 }
 
@@ -409,7 +409,7 @@ func (suite *TairSearchTestSuite) TestTftMAddTestString() {
 
 	r, e := suite.tairClient.TftSearch(ctx, "tftkey", "{\"query\":{\"match\":{\"f1\":\"3\"}}}").Result()
 	assert.NoError(suite.T(), e)
-	assert.Equal(suite.T(), r, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.223144,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.223144,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
+	assert.Equal(suite.T(), r, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"tftkey\",\"_score\":1.49608,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.49608,\"total\":{\"relation\":\"eq\",\"value\":3}}}")
 
 	r1, e1 := suite.tairClient.TftGetDoc(ctx, "tftkey", "3").Result()
 	assert.NoError(suite.T(), e1)

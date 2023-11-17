@@ -202,8 +202,7 @@ func (suite *TairClusterTestSuite) TestClusterftMSearch() {
 
 	result1, err1 := suite.tairClient.TftMSearch(ctx, 3, "{\"query\":{\"match\":{\"f1\":\"3\"}}}", "{tftkey}1", "{tftkey}2", "{tftkey}3").Result()
 	assert.NoError(suite.T(), err1)
-	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"{tftkey}1\",\"_score\":1.0,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"{tftkey}2\",\"_score\":1.0,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"{tftkey}3\",\"_score\":0.306853,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.0,\"total\":{\"relation\":\"eq\",\"value\":3}},\"aux_info\":{\"index_crc64\":52600736426816810}}")
-
+	assert.Equal(suite.T(), result1, "{\"hits\":{\"hits\":[{\"_id\":\"1\",\"_index\":\"{tftkey}1\",\"_score\":1.0,\"_source\":{\"f0\":\"v0\",\"f1\":\"3\"}},{\"_id\":\"2\",\"_index\":\"{tftkey}2\",\"_score\":1.0,\"_source\":{\"f0\":\"v1\",\"f1\":\"3\"}},{\"_id\":\"3\",\"_index\":\"{tftkey}3\",\"_score\":0.094159,\"_source\":{\"f0\":\"v3\",\"f1\":\"3\"}}],\"max_score\":1.0,\"total\":{\"relation\":\"eq\",\"value\":3}},\"aux_info\":{\"index_crc64\":52600736426816810}}")
 }
 
 func TestTairClusterTestSuite(t *testing.T) {

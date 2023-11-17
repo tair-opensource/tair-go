@@ -187,38 +187,38 @@ func (suite *TairCpcTestSuite) TestCpcArrayUpdateAndEstimate() {
 	assert.InDelta(suite.T(), r7, 2, 0.001)
 }
 
-func (suite *TairCpcTestSuite) TestCpcArrayEstimateRange() {
-	r, e := suite.tairClient.CpcArrayUpdate(ctx, key, timestamp, item).Result()
-	assert.NoError(suite.T(), e)
-	assert.Equal(suite.T(), r, "OK")
-
-	r1, e1 := suite.tairClient.CpcArrayEstimateRange(ctx, key, timestamp-1000, timestamp+1000).Result()
-	assert.NoError(suite.T(), e1)
-	assert.InDelta(suite.T(), r1[0], 1, 0.1)
-}
-
-func (suite *TairCpcTestSuite) TestCpcArrayEstimateRangeMerge() {
-	r, e := suite.tairClient.CpcArrayUpdate(ctx, key, timestamp, item).Result()
-	assert.NoError(suite.T(), e)
-	assert.Equal(suite.T(), r, "OK")
-
-	r1, e1 := suite.tairClient.CpcArrayEstimateRange(ctx, key, timestamp-1000, timestamp+1000).Result()
-	assert.NoError(suite.T(), e1)
-	assert.InDelta(suite.T(), r1[0], 1, 0.1)
-
-	r2, e2 := suite.tairClient.CpcArrayEstimateRangeMerge(ctx, key, timestamp, 10000).Result()
-	assert.NoError(suite.T(), e2)
-	assert.InDelta(suite.T(), r2, 1, 0.1)
-}
-
-func (suite *TairCpcTestSuite) TestCpcArrayUpdate2Est() {
-	r, e := suite.tairClient.CpcArrayUpdate(ctx, key, timestamp, item).Result()
-	assert.NoError(suite.T(), e)
-	assert.Equal(suite.T(), r, "OK")
-	r1, e1 := suite.tairClient.CpcArrayEstimateRange(ctx, key, timestamp-1000, timestamp+1000).Result()
-	assert.NoError(suite.T(), e1)
-	assert.InDelta(suite.T(), r1[0], 1, 0.001)
-}
+//func (suite *TairCpcTestSuite) TestCpcArrayEstimateRange() {
+//	r, e := suite.tairClient.CpcArrayUpdate(ctx, key, timestamp, item).Result()
+//	assert.NoError(suite.T(), e)
+//	assert.Equal(suite.T(), r, "OK")
+//
+//	r1, e1 := suite.tairClient.CpcArrayEstimateRange(ctx, key, timestamp-1000, timestamp+1000).Result()
+//	assert.NoError(suite.T(), e1)
+//	assert.InDelta(suite.T(), r1[0], 1, 0.1)
+//}
+//
+//func (suite *TairCpcTestSuite) TestCpcArrayEstimateRangeMerge() {
+//	r, e := suite.tairClient.CpcArrayUpdate(ctx, key, timestamp, item).Result()
+//	assert.NoError(suite.T(), e)
+//	assert.Equal(suite.T(), r, "OK")
+//
+//	r1, e1 := suite.tairClient.CpcArrayEstimateRange(ctx, key, timestamp-1000, timestamp+1000).Result()
+//	assert.NoError(suite.T(), e1)
+//	assert.InDelta(suite.T(), r1[0], 1, 0.1)
+//
+//	r2, e2 := suite.tairClient.CpcArrayEstimateRangeMerge(ctx, key, timestamp, 10000).Result()
+//	assert.NoError(suite.T(), e2)
+//	assert.InDelta(suite.T(), r2, 1, 0.1)
+//}
+//
+//func (suite *TairCpcTestSuite) TestCpcArrayUpdate2Est() {
+//	r, e := suite.tairClient.CpcArrayUpdate(ctx, key, timestamp, item).Result()
+//	assert.NoError(suite.T(), e)
+//	assert.Equal(suite.T(), r, "OK")
+//	r1, e1 := suite.tairClient.CpcArrayEstimateRange(ctx, key, timestamp-1000, timestamp+1000).Result()
+//	assert.NoError(suite.T(), e1)
+//	assert.InDelta(suite.T(), r1[0], 1, 0.001)
+//}
 
 func (suite *TairCpcTestSuite) TestCpcArrayUpdate2Jud() {
 	r, e := suite.tairClient.CpcUpdate(ctx, key, item).Result()

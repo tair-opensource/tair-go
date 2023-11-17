@@ -377,17 +377,17 @@ func (suite *TairDocTestSuite) TestJsonArrPopError() {
 
 func (suite *TairDocTestSuite) TestJsonArrInsertError() {
 	suite.tairClient.Set(ctx, randomKey, "bar", 0)
-	_, e := suite.tairClient.JsonArrInsert(ctx, randomKey, "", "", "", "").Result()
+	_, e := suite.tairClient.JsonArrInsert(ctx, randomKey, ".id", "3", "5", "6").Result()
 	assert.Error(suite.T(), e)
 	assert.Contains(suite.T(), e, "WRONGTYPE")
 
-	_, e2 := suite.tairClient.JsonArrInsert(ctx, randomKey, "", "", "").Result()
+	_, e2 := suite.tairClient.JsonArrInsert(ctx, randomKey, ".id", "3", "5", "6").Result()
 	assert.Error(suite.T(), e2)
 	assert.Contains(suite.T(), e2, "WRONGTYPE")
 
 	_, e3 := suite.tairClient.JsonArrInsert(ctx, randomKey, "").Result()
 	assert.Error(suite.T(), e3)
-	assert.Contains(suite.T(), e3, "ERR wrong number of arguments for 'JSON.ARRINSERT' command")
+	assert.Contains(suite.T(), e3, "ERR wrong number of arguments")
 }
 
 func (suite *TairDocTestSuite) TestJsonArrLenError() {

@@ -174,9 +174,10 @@ func (suite *TairBloomTestSuite) TestBfMExistException() {
 }
 
 func (suite *TairBloomTestSuite) TestBfInsertException() {
-	suite.tairClient.BfInsert(ctx, randomkey_, tair.BfInsertArgs{}.New(), "item")
+	a := tair.BfInsertArgs{}.New().Capacity(100).ErrorRate(0.001)
+	suite.tairClient.BfInsert(ctx, randomkey_, a, "item")
 	suite.tairClient.Set(ctx, randomkey_, "bar", 0)
-	_, err1 := suite.tairClient.BfInsert(ctx, randomkey_, tair.BfInsertArgs{}.New(), "item").Result()
+	_, err1 := suite.tairClient.BfInsert(ctx, randomkey_, a, "item").Result()
 	assert.Error(suite.T(), err1)
 	assert.Contains(suite.T(), err1, "WRONGTYPE")
 }

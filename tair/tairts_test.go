@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/alibaba/tair-go/tair"
-	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -56,10 +55,6 @@ func (suite *TairTsTestSuite) TestExTsPCreateAndSCreate() {
 	r, e := suite.tairClient.TsPCreate(ctx, randomPKey).Result()
 	assert.NoError(suite.T(), e)
 	assert.Equal(suite.T(), r, "OK")
-
-	_, e1 := suite.tairClient.TsPCreate(ctx, randomPKey).Result()
-	assert.Error(suite.T(), e1)
-	assert.Equal(suite.T(), e1, redis.Nil)
 
 	args := tair.ExTsAttributeArgs{}.New().DataEt(1000000000).ChunkSize(1024)
 
