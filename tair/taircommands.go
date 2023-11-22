@@ -91,6 +91,7 @@ type TairCmdable interface {
 	TftAnalyzer(ctx context.Context, analyzerName string, text string) *redis.StringCmd
 	TftAnalyzerWithArgs(ctx context.Context, analyzerName string, text string, a *TftAnalyzerArgs) *redis.StringCmd
 	TftExplaincost(ctx context.Context, index string, request string) *redis.StringCmd
+	TftExplainscore(ctx context.Context, index string, request string, docId ...string) *redis.StringCmd
 	TftAddSug(ctx context.Context, index string, textWeight map[string]int64) *redis.IntCmd
 	TftDelSug(ctx context.Context, index string, text ...string) *redis.IntCmd
 	TftSugSum(ctx context.Context, index string) *redis.IntCmd

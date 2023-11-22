@@ -420,6 +420,19 @@ func (tc tairCmdable) TftExplaincost(ctx context.Context, index string, request 
 	return cmd
 }
 
+func (tc tairCmdable) TftExplainscore(ctx context.Context, index string, request string, docId ...string) *redis.StringCmd {
+	a := make([]interface{}, 3)
+	a[0] = "TFT.EXPLAINSCORE"
+	a[1] = index
+	a[2] = request
+	for _, id := range docId {
+		a = append(a, id)
+	}
+	cmd := redis.NewStringCmd(ctx, a...)
+	_ = tc(ctx, cmd)
+	return cmd
+}
+
 func (tc tairCmdable) TftAddSug(ctx context.Context, index string, textWeight map[string]int64) *redis.IntCmd {
 	args := make([]interface{}, 2)
 	args[0] = "TFT.ADDSUG"
