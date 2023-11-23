@@ -165,6 +165,32 @@ type TairCmdable interface {
 	BfMExists(ctx context.Context, key string, items ...string) *redis.BoolSliceCmd
 	BfInsert(ctx context.Context, key string, bfInsertArgs *BfInsertArgs, items ...string) *redis.BoolSliceCmd
 	BfDebug(ctx context.Context, key string) *redis.StringSliceCmd
+	// TairVector
+	TvsCreateIndex(ctx context.Context, name string, dim int, indexType string, distanceType string, a *TvsCreateIndexArgs) *redis.StatusCmd
+	TvsGetIndex(ctx context.Context, name string) *redis.SliceCmd
+	TvsDelIndex(ctx context.Context, name string) *redis.IntCmd
+	TvsScanIndex(ctx context.Context, cursor string, a *TvsScanIndexArgs) *redis.SliceCmd
+	TvsHSet(ctx context.Context, index string, key string, a *TvsHSetArgs) *redis.IntCmd
+	TvsHGetAll(ctx context.Context, index string, key string) *redis.SliceCmd
+	TvsHMGet(ctx context.Context, index string, key string, fields []string) *redis.SliceCmd
+	TvsDel(ctx context.Context, index string, keys []string) *redis.IntCmd
+	TvsHDel(ctx context.Context, index string, key string, fields []string) *redis.IntCmd
+	TvsScan(ctx context.Context, index string, cursor string, a *TvsScanArgs) *redis.SliceCmd
+	TvsHIncrBy(ctx context.Context, index string, key string, field string, value int64) *redis.IntCmd
+	TvsHIncrByFloat(ctx context.Context, index string, key string, field string, value float64) *redis.FloatCmd
+	TvsHPExpire(ctx context.Context, index string, key string, milliseconds int) *redis.IntCmd
+	TvsHPExpireAt(ctx context.Context, index string, key string, milliUnixTime int) *redis.IntCmd
+	TvsHExpire(ctx context.Context, index string, key string, seconds int) *redis.IntCmd
+	TvsHExpireAt(ctx context.Context, index string, key string, unixTime int) *redis.IntCmd
+	TvsHPTTL(ctx context.Context, index string, key string) *redis.IntCmd
+	TvsHTTL(ctx context.Context, index string, key string) *redis.IntCmd
+	TvsHPExpireTime(ctx context.Context, index string, key string) *redis.IntCmd
+	TvsHExpireTime(ctx context.Context, index string, key string) *redis.IntCmd
+	TvsKnnSearch(ctx context.Context, index string, topN int, vector string, a *TvsKnnSearchArgs) *redis.SliceCmd
+	TvsGetDistance(ctx context.Context, index string, vector string, keys []string, a *TvsGetDistanceArgs) *redis.SliceCmd
+	TvsMKnnSearch(ctx context.Context, index string, topN int, vectors []string, a *TvsKnnSearchArgs) *redis.SliceCmd
+	TvsMIndexKnnSearch(ctx context.Context, indexes []string, topN int, vector string, a *TvsKnnSearchArgs) *redis.SliceCmd
+	TvsMIndexMKnnSearch(ctx context.Context, indexes []string, topN int, vectors []string, a *TvsKnnSearchArgs) *redis.SliceCmd
 	// TairPipeline
 	TairPipeline() TairPipeline
 	TairPipelined(ctx context.Context, fn func(redis.Pipeliner) error) ([]redis.Cmder, error)
