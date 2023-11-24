@@ -17,6 +17,7 @@ English | [简体中文](./README-CN.md)
 - [TairGis](https://help.aliyun.com/document_detail/145971.html), 支持地理位置点、线、面的相交、包含等关系判断。（已[开源](https://github.com/tair-opensource/TairGis)）
 - [TairTs](https://help.aliyun.com/document_detail/408954.html), 时序数据结构，提供低时延、高并发的内存读写访问。
 - [TairCpc](https://help.aliyun.com/document_detail/410587.html), 基于CPC（Compressed Probability Counting）压缩算法开发的数据结构，支持仅占用很小的内存空间对采样数据进行高性能计算。
+- [TairVector](https://help.aliyun.com/zh/tair/developer-reference/vector), 提供高性能、实时，集存储、检索于一体的向量数据库服务。
 
 ## 安装
 ```
