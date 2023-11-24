@@ -105,8 +105,8 @@ type TairCmdable interface {
 	ExHMSet(ctx context.Context, key string, fieldValue map[string]string) *redis.StatusCmd
 	ExHMSetWithOpts(ctx context.Context, key string, arg ...*ExHMSetWithOptsArgs) *redis.StatusCmd
 	ExHPExpire(ctx context.Context, key, field string, milliseconds int) *redis.BoolCmd
-	ExHPExpireAt(ctx context.Context, key, field string, unixTime int) *redis.BoolCmd
-	ExHExpire(ctx context.Context, key, field string, milliseconds int) *redis.BoolCmd
+	ExHPExpireAt(ctx context.Context, key, field string, milliUnixTime int) *redis.BoolCmd
+	ExHExpire(ctx context.Context, key, field string, seconds int) *redis.BoolCmd
 	ExHExpireAt(ctx context.Context, key, field string, unixTime int) *redis.BoolCmd
 	ExHPTTL(ctx context.Context, key, field string) *redis.IntCmd
 	ExHTTL(ctx context.Context, key, field string) *redis.IntCmd

@@ -336,23 +336,23 @@ func (tc tairCmdable) ExHPExpire(ctx context.Context, key, field string, millise
 	return cmd
 }
 
-func (tc tairCmdable) ExHPExpireAt(ctx context.Context, key, field string, unixTime int) *redis.BoolCmd {
+func (tc tairCmdable) ExHPExpireAt(ctx context.Context, key, field string, milliUnixTime int) *redis.BoolCmd {
 	a := make([]interface{}, 4)
 	a[0] = "exhpexpireat"
 	a[1] = key
 	a[2] = field
-	a[3] = unixTime
+	a[3] = milliUnixTime
 	cmd := redis.NewBoolCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
 }
 
-func (tc tairCmdable) ExHExpire(ctx context.Context, key, field string, milliseconds int) *redis.BoolCmd {
+func (tc tairCmdable) ExHExpire(ctx context.Context, key, field string, seconds int) *redis.BoolCmd {
 	a := make([]interface{}, 4)
 	a[0] = "exhexpire"
 	a[1] = key
 	a[2] = field
-	a[3] = milliseconds
+	a[3] = seconds
 	cmd := redis.NewBoolCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
