@@ -2,7 +2,7 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func (tc tairCmdable) TrSetBit(ctx context.Context, key string, offset int64, value int64) *redis.IntCmd {

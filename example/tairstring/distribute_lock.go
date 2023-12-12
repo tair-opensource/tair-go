@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/alibaba/tair-go/tair"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"math/rand"
 	"sync"
 	"time"
@@ -52,9 +52,9 @@ type Account struct {
 }
 
 func randomString(length int) string {
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	b := make([]byte, length)
-	rand.Read(b)
+	r.Read(b)
 	return fmt.Sprintf("%x", b)[:length]
 }
 

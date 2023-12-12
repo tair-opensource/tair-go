@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/alibaba/tair-go/tair"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"math/rand"
 	"time"
 )
@@ -43,9 +43,9 @@ func randStr(size int) string {
 	str := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	bytes := []byte(str)
 	var result []byte
-	rand.Seed(time.Now().UnixNano() + int64(rand.Intn(100000)))
+	r := rand.New(rand.NewSource(time.Now().UnixNano() + int64(rand.Intn(100000))))
 	for i := 0; i < size; i++ {
-		result = append(result, bytes[rand.Intn(len(bytes))])
+		result = append(result, bytes[r.Intn(len(bytes))])
 	}
 	return string(result)
 }

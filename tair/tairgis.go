@@ -2,7 +2,7 @@ package tair
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"strconv"
 )
 
@@ -427,7 +427,7 @@ func (tc tairCmdable) GisGetAllArgs(ctx context.Context, area string, args *GisA
 	return resCmd
 }
 
-func (tc tairCmdable) GisWithin(ctx context.Context, area string, polygonWkt string, withoutWkt bool) *redis.StringStringMapCmd {
+func (tc tairCmdable) GisWithin(ctx context.Context, area string, polygonWkt string, withoutWkt bool) *redis.MapStringStringCmd {
 	a := make([]interface{}, 3)
 	a[0] = "GIS.WITHIN"
 	a[1] = area
@@ -435,7 +435,7 @@ func (tc tairCmdable) GisWithin(ctx context.Context, area string, polygonWkt str
 	if withoutWkt {
 		a = append(a, "WITHOUTWKT")
 	}
-	cmd := redis.NewStringStringMapCmd(ctx, a...)
+	cmd := redis.NewMapStringStringCmd(ctx, a...)
 	_ = tc(ctx, cmd)
 	return cmd
 }
