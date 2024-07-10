@@ -66,6 +66,7 @@ func redisOptions() *redis.Options {
 		PoolSize:        10,
 		PoolTimeout:     30 * time.Second,
 		ConnMaxIdleTime: time.Minute,
+		Protocol:        2,
 	}
 }
 
@@ -80,6 +81,7 @@ func redisClusterOptions() *redis.ClusterOptions {
 		PoolSize:        10,
 		PoolTimeout:     30 * time.Second,
 		ConnMaxIdleTime: time.Minute,
+		Protocol:        2,
 	}
 }
 

@@ -15,6 +15,7 @@ type TairClient struct {
 }
 
 func NewTairClient(opt *redis.Options) *TairClient {
+	opt.Protocol = 2 // For tair, only resp2 is used
 	c := TairClient{Client: redis.NewClient(opt)}
 	c.tairCmdable = c.Process
 	return &c
