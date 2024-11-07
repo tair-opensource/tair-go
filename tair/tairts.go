@@ -902,7 +902,7 @@ func (tc tairCmdable) ExTsMRawModifyArgs(ctx context.Context, pKey string, sKeys
 
 func (tc tairCmdable) ExTsRawIncr(ctx context.Context, pKey string, sKey string, ts string, value float64) *redis.StringCmd {
 	a := make([]interface{}, 5)
-	a[0] = "EXTS.S.RAW_MODIFY"
+	a[0] = "EXTS.S.RAW_INCRBY"
 	a[1] = pKey
 	a[2] = sKey
 	a[3] = ts
@@ -914,7 +914,7 @@ func (tc tairCmdable) ExTsRawIncr(ctx context.Context, pKey string, sKey string,
 
 func (tc tairCmdable) ExTsRawIncrArgs(ctx context.Context, pKey string, sKey string, ts string, value float64, args *ExTsAttributeArgs) *redis.StringCmd {
 	a := make([]interface{}, 5)
-	a[0] = "EXTS.S.RAW_MODIFY"
+	a[0] = "EXTS.S.RAW_INCRBY"
 	a[1] = pKey
 	a[2] = sKey
 	a[3] = ts
